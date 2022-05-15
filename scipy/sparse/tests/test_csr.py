@@ -113,3 +113,137 @@ def test_csr_bool_indexing():
     assert (slice_list2 == slice_array2).all()
     assert (slice_list3 == slice_array3).all()
 
+
+# https://github.com/scipy/scipy/issues/9253
+# error case
+def test_csr_non_monotonic_indptr():
+    with pytest.raises(
+            ValueError,
+            match="index pointer values must form a non-decreasing sequence"):
+        m = csr_matrix(
+            ([33, 44, 55], [0, 1, 2], [0, 3, 0, 0]),
+            dtype=np.int8,
+            shape=(3,3))
+        m.toarray()
+
+
+# https://github.com/scipy/scipy/issues/9253
+# ok case
+def test_csr_monotonic_indptr():
+    m = csr_matrix(
+        ([33, 44, 55], [0, 1, 2], [0, 3, 3, 3]),
+        dtype=np.int8,
+        shape=(3,3))
+    assert m.toarray().tolist() == [[33, 44, 55], [0, 0, 0], [0, 0, 0]]
+
+
+# https://github.com/scipy/scipy/issues/8778
+# error case (oob)
+def test_csr_oob_indices():
+    with pytest.raises(
+            ValueError,
+            match="column index values must be < 1000"):
+        data = [1.0, 1.0]
+        indices = [1001, 555]
+        indptr = [0, 1, 2]
+        shape = (2, 1000)
+
+        m = csr_matrix((data, indices, indptr), shape=shape)
+        res = m * m.T
+        res.toarray().tolist()
+
+
+# https://github.com/scipy/scipy/issues/8778#issuecomment-787603693
+# error case (negative indices)
+def test_csr_neg_indices():
+    with pytest.raises(
+            ValueError,
+            match="column index values must be >= 0"):
+        data = [1.0, 1.0]
+        # negative indices cause the program to write to memory at a lower address
+        # than the vulnerable buffer
+        indices = [-100, -555]
+        indptr = [0, 1, 2]
+        shape = (2, 1000)
+        m = csr_matrix((data, indices, indptr), shape=shape)
+        res = m * m.T
+        res.toarray().tolist()
+
+
+# https://github.com/scipy/scipy/issues/8778
+# ok case
+def test_csr_ok_indices():
+    data = [1.0, 1.0]
+    indices = [999, 555]
+    indptr = [0, 1, 2]
+    shape = (2, 1000)
+
+    m = csr_matrix((data, indices, indptr), shape=shape)
+    res = m * m.T
+    assert res.toarray().tolist() == [[1.0, 0.0], [0.0, 1.0]]
+
+
+# https://github.com/scipy/scipy/issues/8778#issuecomment-787603693
+# error case (corrupt indptr)
+def test_csr_tocsc_corrupt_indptr():
+    with pytest.raises(
+            ValueError,
+            match="assignment destination is read-only"):
+        data = [1.0, 1.0]
+        indices = [0, 1]
+        indptr = [0, 2]
+        shape = (1, 2)
+        m = csr_matrix((data, indices, indptr), shape=shape)
+        m.indptr[1] = 10  # corrupt indptr
+        # tocsc() does not validate the nnz value (the last item in the indptr
+        # vector) before proceding
+        m.tocsc()
+        # np.sum(m)  # or other external function that we cannot check
+
+
+# https://github.com/scipy/scipy/issues/8778#issuecomment-787603693
+# error case (ok indptr)
+def test_csr_tocsc_ok_indptr():
+    data = [1.0, 1.0]
+    indices = [0, 1]
+    indptr = [0, 2]
+    shape = (1, 2)
+    m = csr_matrix((data, indices, indptr), shape=shape)
+    # <no indptr corruption here>
+    # tocsc() does not validate the nnz value (the last item in the indptr
+    # vector) before proceding
+    m.tocsc()
+
+
+# https://github.com/scipy/scipy/issues/12131
+# error case (corrupted indices: toarray)
+def test_csr_toarray_corrupt_indices():
+    with pytest.raises(
+            AttributeError,
+            match="'list' object has no attribute 'dtype'"):
+        a = csr_matrix(np.arange(16).reshape((4, 4)))
+        a.indices = [0]  # corrupt indices
+        a.toarray()
+
+
+# https://github.com/scipy/scipy/issues/12131
+# error case (corrupted indices: sum)
+def test_csr_sum_corrupt_indices():
+    with pytest.raises(
+            AttributeError,
+            match="'list' object has no attribute 'dtype'"):
+        a = csr_matrix(np.arange(16).reshape((4, 4)))
+        a.indices = [0]  # corrupt indices
+        np.sum(a)
+
+
+# https://github.com/scipy/scipy/issues/12131
+# error case (corrupted indices: at)
+def test_csr_at_corrupt_indices():
+    with pytest.raises(
+            AttributeError,
+            match="'list' object has no attribute 'dtype'"):
+        a = csr_matrix(np.arange(16).reshape((4, 4)))
+        b = csr_matrix(np.eye(4))
+        a.indices = [0]  # corrupt indices
+        a @ b

@@ -20,8 +20,18 @@ from ._sputils import (upcast, upcast_char, to_native, isdense, isshape,
                        is_pydata_spmatrix)
 
 
+def ro_array(arr):
+    """make the array read-only"""
+    arr.setflags(write=False)
+    # views cannot modify the writeable flag
+    arr = arr.view()
+    return arr
+
+
 class _cs_matrix(_data_matrix, _minmax_mixin, IndexMixin):
     """base matrix class for compressed row- and column-oriented matrices"""
+
+    _init_called = False
 
     def __init__(self, arg1, shape=None, dtype=None, copy=False):
         _data_matrix.__init__(self)
@@ -103,7 +113,12 @@ class _cs_matrix(_data_matrix, _minmax_mixin, IndexMixin):
         if dtype is not None:
             self.data = self.data.astype(dtype, copy=False)
 
-        self.check_format(full_check=False)
+        self.data = ro_array(self.data)
+        self.indices = ro_array(self.indices)
+        self.indptr = ro_array(self.indptr)
+
+        self.check_format(full_check=True)
+        self._init_called = True
 
     def getnnz(self, axis=None):
         if axis is None:
@@ -178,20 +193,25 @@ class _cs_matrix(_data_matrix, _minmax_mixin, IndexMixin):
             raise ValueError("Last value of index pointer should be less than "
                              "the size of index and data arrays")
 
+        # check format validity (more expensive)
+        if full_check:
+            # must be done before prune because it relies on nnz being calculated
+            # properly, which relies on indptr to be correct
+            indptr_diff = np.diff(self.indptr)
+            if indptr_diff.size > 0 and indptr_diff.min() < 0:
+                raise ValueError("index pointer values must form a "
+                                 "non-decreasing sequence")
+
         self.prune()
 
+        # check format validity (more expensive)
         if full_check:
-            # check format validity (more expensive)
-            if self.nnz > 0:
-                if self.indices.max() >= minor_dim:
-                    raise ValueError("{} index values must be < {}"
-                                     "".format(minor_name, minor_dim))
-                if self.indices.min() < 0:
-                    raise ValueError("{} index values must be >= 0"
-                                     "".format(minor_name))
-                if np.diff(self.indptr).min() < 0:
-                    raise ValueError("index pointer values must form a "
-                                     "non-decreasing sequence")
+            if self.indices.size > 0 and self.indices.max() >= minor_dim:
+                raise ValueError("{} index values must be < {}"
+                                 "".format(minor_name, minor_dim))
+            if self.indices.size > 0 and self.indices.min() < 0:
+                raise ValueError("{} index values must be >= 0"
+                                 "".format(minor_name))
 
         # if not self.has_sorted_indices():
         #    warn('Indices were not in sorted order.  Sorting indices.')

@@ -132,6 +132,43 @@ class csr_matrix(_cs_matrix):
     """
     format = 'csr'
 
+    _in_check_format = False
+
+    def __setattr__(self, attr, val):
+        # critical attributes that must be checked on each modification (taken
+        # from csr), add more here if necessary
+        #
+        # checking attributes like this (as opposed to checking potentially
+        # vulnerable methods) is preferred since crashes can happen when passing
+        # invalid scipy matrices to external libraries, such as numpy, e.g.,
+        # with `np.sum(a)` where `a` is a matrix with a corrupted `indices`
+        # attribute.
+        #
+        # https://github.com/scipy/scipy/issues/9253
+        # https://github.com/scipy/scipy/issues/8778
+        # https://github.com/scipy/scipy/issues/12131
+        attrs = {
+            "dtype",
+            "shape",
+            "ndim",
+            "nnz",
+            "data",
+            "indices",
+            "indptr",
+            "has_sorted_indices",
+        }
+
+        # set the attribute
+        super().__setattr__(attr, val)
+
+        # check whether it's one of the critical ones
+        if attr in attrs and self._init_called and not self._in_check_format:
+            try:
+                self._in_check_format = True
+                self.check_format(full_check=True)
+            finally:
+                self._in_check_format = False
+
     def transpose(self, axes=None, copy=False):
         if axes is not None:
             raise ValueError(("Sparse matrices do not support "
