@@ -11,7 +11,7 @@ from ._sparsetools import (csr_tocsc, csr_tobsr, csr_count_blocks,
                            get_csr_submatrix)
 from ._sputils import upcast, get_index_dtype
 
-from ._compressed import _cs_matrix
+from ._compressed import (_cs_matrix, _checked_array)
 
 
 class csr_matrix(_cs_matrix):
@@ -158,7 +158,12 @@ class csr_matrix(_cs_matrix):
             "has_sorted_indices",
         }
 
+        # XXX: could do more elaborate checking of attrs' types here
+
         # set the attribute
+        if (attr in ["data", "indices", "indptr"] and
+            not isinstance(val, _checked_array)):
+                val = _checked_array(val, parent=self)
         super().__setattr__(attr, val)
 
         # check whether it's one of the critical ones

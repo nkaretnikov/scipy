@@ -188,7 +188,8 @@ def test_csr_ok_indices():
 def test_csr_tocsc_corrupt_indptr():
     with pytest.raises(
             ValueError,
-            match="assignment destination is read-only"):
+            match=("Last value of index pointer should be less than the size of"
+                   " index and data arrays")):
         data = [1.0, 1.0]
         indices = [0, 1]
         indptr = [0, 2]
@@ -219,8 +220,8 @@ def test_csr_tocsc_ok_indptr():
 # error case (corrupted indices: toarray)
 def test_csr_toarray_corrupt_indices():
     with pytest.raises(
-            AttributeError,
-            match="'list' object has no attribute 'dtype'"):
+            ValueError,
+            match="indices and data should have the same size"):
         a = csr_matrix(np.arange(16).reshape((4, 4)))
         a.indices = [0]  # corrupt indices
         a.toarray()
@@ -230,8 +231,8 @@ def test_csr_toarray_corrupt_indices():
 # error case (corrupted indices: sum)
 def test_csr_sum_corrupt_indices():
     with pytest.raises(
-            AttributeError,
-            match="'list' object has no attribute 'dtype'"):
+            ValueError,
+            match="indices and data should have the same size"):
         a = csr_matrix(np.arange(16).reshape((4, 4)))
         a.indices = [0]  # corrupt indices
         np.sum(a)
@@ -241,8 +242,8 @@ def test_csr_sum_corrupt_indices():
 # error case (corrupted indices: at)
 def test_csr_at_corrupt_indices():
     with pytest.raises(
-            AttributeError,
-            match="'list' object has no attribute 'dtype'"):
+            ValueError,
+            match="indices and data should have the same size"):
         a = csr_matrix(np.arange(16).reshape((4, 4)))
         b = csr_matrix(np.eye(4))
         a.indices = [0]  # corrupt indices

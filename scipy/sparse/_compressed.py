@@ -20,12 +20,31 @@ from ._sputils import (upcast, upcast_char, to_native, isdense, isshape,
                        is_pydata_spmatrix)
 
 
-def ro_array(arr):
-    """make the array read-only"""
-    arr.setflags(write=False)
-    # views cannot modify the writeable flag
-    arr = arr.view()
-    return arr
+# https://numpy.org/doc/stable/user/basics.subclassing.html
+class _checked_array(np.ndarray):
+    def __new__(cls, arr, parent=None):
+        obj = np.asarray(arr).view(cls)
+        obj.parent = parent
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        self.parent = getattr(obj, 'parent', None)
+
+    def __setitem__(self, index, val):
+        super().__setitem__(index, val)
+        parent = getattr(self, 'parent', None)
+        if parent is not None and parent._init_called:
+            parent.check_format(full_check=True)
+
+    # def __setattr__(self, attr, val):
+    #     super().__setattr__(attr, val)
+    #     if attr == 'parent':
+    #         return
+    #     parent = getattr(self, 'parent', None)
+    #     if parent is not None and parent._init_called:
+    #         parent.check_format(full_check=True)
 
 
 class _cs_matrix(_data_matrix, _minmax_mixin, IndexMixin):
@@ -113,9 +132,12 @@ class _cs_matrix(_data_matrix, _minmax_mixin, IndexMixin):
         if dtype is not None:
             self.data = self.data.astype(dtype, copy=False)
 
-        self.data = ro_array(self.data)
-        self.indices = ro_array(self.indices)
-        self.indptr = ro_array(self.indptr)
+        if not isinstance(self.data, _checked_array):
+            self.data = _checked_array(self.data, parent=self)
+        if not isinstance(self.indices, _checked_array):
+            self.indices = _checked_array(self.indices, parent=self)
+        if not isinstance(self.indptr, _checked_array):
+            self.indptr = _checked_array(self.indptr, parent=self)
 
         self.check_format(full_check=True)
         self._init_called = True
