@@ -1217,6 +1217,19 @@ class TestNdimageMorphology:
                                iterations=iterations, output=out)
         assert_array_almost_equal(out, expected)
 
+    def test_binary_erosion41(self):
+        # https://github.com/scikit-image/scikit-image/blob/main/skimage/morphology/footprints.py
+        def disk(radius, dtype=numpy.uint8):
+            L = numpy.arange(-radius, radius + 1)
+            X, Y = numpy.meshgrid(L, L)
+            return numpy.array((X ** 2 + Y ** 2) <= radius ** 2, dtype=dtype)
+
+        # https://github.com/scipy/scipy/issues/11400
+        rstate = numpy.random.RandomState(123)
+        inds = numpy.array(rstate.rand(45, 25) > 0.2)
+        struct = disk(32, dtype=bool)
+        ndimage.binary_dilation(inds, struct, iterations=2)
+
     @pytest.mark.parametrize('dtype', types)
     def test_binary_dilation01(self, dtype):
         data = numpy.ones([], dtype)
