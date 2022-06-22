@@ -693,7 +693,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                NI_ITERATOR_NEXT3(ii, di, fi, pi, pd, pf);
+                NI_ITERATOR_NEXT3(ii, di, fi, pi, pi_base, pi_size, pd, pd_base,
+                                  pd_size, pf, pf_base, pf_size);
             } else if (distances) {
                 NI_ITERATOR_NEXT2(ii, di, pi, pi_base, pi_size, pd, pd_base,
                                   pd_size);
@@ -741,7 +742,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                NI_ITERATOR_NEXT3(ii, di, fi, pi, pd, pf);
+                NI_ITERATOR_NEXT3(ii, di, fi, pi, pi_base, pi_size, pd, pd_base,
+                                  pd_size, pf, pf_base, pf_size);
             } else if (distances) {
                 NI_ITERATOR_NEXT2(ii, di, pi, pi_base, pi_size, pd, pd_base,
                                   pd_size);
