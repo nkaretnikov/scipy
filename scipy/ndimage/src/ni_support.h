@@ -299,11 +299,11 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
         npy_intp b1 = (_itf).bound1[_ii];                                     \
         npy_intp b2 = (_itf).bound2[_ii];                                     \
         if (_pp < b1) {                                                       \
-                _jj = _pp;                                                    \
+            _jj = _pp;                                                        \
         } else if (_pp > b2 && b2 >= b1) {                                    \
-                _jj = _pp + b1 - b2;                                          \
+            _jj = _pp + b1 - b2;                                              \
         } else {                                                              \
-                _jj = b1;                                                     \
+            _jj = b1;                                                         \
         }                                                                     \
         _ptrf += (_itf).strides[_ii] * _jj;                                   \
     }                                                                         \
