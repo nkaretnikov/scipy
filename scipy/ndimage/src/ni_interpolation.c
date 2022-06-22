@@ -148,6 +148,7 @@ int NI_SplineFilter1D(PyArrayObject *input, int order, int axis,
     int npoles = 0, more;
     npy_intp kk, lines, len;
     double *buffer = NULL, poles[MAX_SPLINE_FILTER_POLES];
+    npy_intp buffer_size = 0;
     NI_LineBuffer iline_buffer, oline_buffer;
     NPY_BEGIN_THREADS_DEF;
 
@@ -164,14 +165,14 @@ int NI_SplineFilter1D(PyArrayObject *input, int order, int axis,
          because the calculation is in-place: */
     lines = -1;
     if (!NI_AllocateLineBuffer(input, axis, 0, 0, &lines, BUFFER_SIZE,
-                               &buffer)) {
+                               &buffer, &buffer_size)) {
         goto exit;
     }
-    if (!NI_InitLineBuffer(input, axis, 0, 0, lines, buffer,
+    if (!NI_InitLineBuffer(input, axis, 0, 0, lines, buffer, buffer_size,
                            NI_EXTEND_DEFAULT, 0.0, &iline_buffer)) {
         goto exit;
     }
-    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, buffer,
+    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, buffer, buffer_size,
                            NI_EXTEND_DEFAULT, 0.0, &oline_buffer)) {
         goto exit;
     }

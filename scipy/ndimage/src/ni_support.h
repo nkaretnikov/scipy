@@ -163,10 +163,12 @@ int NI_LineIterator(NI_Iterator*, int);
 /* the linebuffer structure: */
 typedef struct {
     double *buffer_data;
+    npy_intp buffer_size;  /* bytes */
     npy_intp buffer_lines, line_length, line_stride;
     npy_intp size1, size2, array_lines, next_line;
     NI_Iterator iterator;
     char* array_data;
+    npy_intp array_size;  /* bytes */
     enum NPY_TYPES array_type;
     NI_ExtendMode extend_mode;
     double extend_value;
@@ -178,11 +180,11 @@ typedef struct {
      (_buffer).size1 + (_buffer).size2))
 /* Allocate line buffer data */
 int NI_AllocateLineBuffer(PyArrayObject*, int, npy_intp, npy_intp,
-                           npy_intp*, npy_intp, double**);
+                           npy_intp*, npy_intp, double**, npy_intp*);
 
 /* Initialize a line buffer */
 int NI_InitLineBuffer(PyArrayObject*, int, npy_intp, npy_intp, npy_intp,
-                                            double*, NI_ExtendMode, double, NI_LineBuffer*);
+                      double*, npy_intp, NI_ExtendMode, double, NI_LineBuffer*);
 
 /* Extend a line in memory to implement boundary conditions: */
 int NI_ExtendLine(double*, npy_intp, npy_intp, npy_intp, NI_ExtendMode, double);

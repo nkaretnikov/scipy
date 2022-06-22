@@ -85,9 +85,17 @@ int NI_LineIterator(NI_Iterator *iterator, int axis)
 
 /* Allocate line buffer data */
 int NI_AllocateLineBuffer(PyArrayObject* array, int axis, npy_intp size1,
-        npy_intp size2, npy_intp *lines, npy_intp max_size, double **buffer)
+        npy_intp size2, npy_intp *lines, npy_intp max_size, double **buffer,
+        npy_intp *buffer_size)
 {
     npy_intp line_size, max_lines;
+
+    if (!lines || !buffer || !buffer_size) {
+        PyErr_SetString(
+            PyExc_RuntimeError,
+            "NI_AllocateLineBuffer: null pointer");
+        return 0;
+    }
 
     /* the number of lines of the array is an upper limit for the
          number of lines in the buffer: */
@@ -109,7 +117,8 @@ int NI_AllocateLineBuffer(PyArrayObject* array, int axis, npy_intp size1,
     if (*lines > max_lines)
         *lines = max_lines;
     /* allocate data for the buffer: */
-    *buffer = malloc(*lines * line_size);
+    *buffer_size = *lines * line_size;
+    *buffer = malloc(*buffer_size);
     if (!*buffer) {
         PyErr_NoMemory();
         return 0;
@@ -155,7 +164,8 @@ int NI_CanonicalType(int type_num)
 /* Initialize a line buffer */
 int NI_InitLineBuffer(PyArrayObject *array, int axis, npy_intp size1,
         npy_intp size2, npy_intp buffer_lines, double *buffer_data,
-        NI_ExtendMode extend_mode, double extend_value, NI_LineBuffer *buffer)
+        npy_intp buffer_size, NI_ExtendMode extend_mode, double extend_value,
+        NI_LineBuffer *buffer)
 {
     npy_intp line_length = 0, array_lines = 0, size;
     int array_type;
@@ -203,7 +213,9 @@ int NI_InitLineBuffer(PyArrayObject *array, int axis, npy_intp size1,
     }
     /* initialize the buffer structure: */
     buffer->array_data = (void *)PyArray_DATA(array);
+    buffer->array_size = PyArray_NBYTES(array);
     buffer->buffer_data = buffer_data;
+    buffer->buffer_size = buffer_size;
     buffer->buffer_lines = buffer_lines;
     buffer->array_type = array_type;
     buffer->array_lines = array_lines;

@@ -42,6 +42,7 @@ int NI_Correlate1D(PyArrayObject *input, PyArrayObject *weights,
     int symmetric = 0, more;
     npy_intp ii, jj, ll, lines, length, size1, size2, filter_size;
     double *ibuffer = NULL, *obuffer = NULL;
+    npy_intp ibuffer_size = 0, obuffer_size = 0;
     npy_double *fw;
     NI_LineBuffer iline_buffer, oline_buffer;
     NPY_BEGIN_THREADS_DEF;
@@ -72,16 +73,17 @@ int NI_Correlate1D(PyArrayObject *input, PyArrayObject *weights,
     /* allocate and initialize the line buffers: */
     lines = -1;
     if (!NI_AllocateLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                                         &lines, BUFFER_SIZE, &ibuffer))
+                               &lines, BUFFER_SIZE, &ibuffer, &ibuffer_size))
         goto exit;
     if (!NI_AllocateLineBuffer(output, axis, 0, 0, &lines, BUFFER_SIZE,
-                                                         &obuffer))
+                               &obuffer, &obuffer_size))
         goto exit;
     if (!NI_InitLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                                            lines, ibuffer, mode, cval, &iline_buffer))
+                           lines, ibuffer, mode, ibuffer_size, cval,
+                           &iline_buffer))
         goto exit;
-    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, mode, 0.0,
-                                                 &oline_buffer))
+    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, obuffer_size,
+                           mode, 0.0, &oline_buffer))
         goto exit;
 
     NPY_BEGIN_THREADS;
@@ -315,6 +317,7 @@ NI_UniformFilter1D(PyArrayObject *input, npy_intp filter_size,
     npy_intp lines, kk, ll, length, size1, size2;
     int more;
     double *ibuffer = NULL, *obuffer = NULL;
+    npy_intp ibuffer_size = 0, obuffer_size = 0;
     NI_LineBuffer iline_buffer, oline_buffer;
     NPY_BEGIN_THREADS_DEF;
 
@@ -323,16 +326,17 @@ NI_UniformFilter1D(PyArrayObject *input, npy_intp filter_size,
     /* allocate and initialize the line buffers: */
     lines = -1;
     if (!NI_AllocateLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                                         &lines, BUFFER_SIZE, &ibuffer))
+                               &lines, BUFFER_SIZE, &ibuffer, &ibuffer_size))
         goto exit;
     if (!NI_AllocateLineBuffer(output, axis, 0, 0, &lines, BUFFER_SIZE,
-                                                         &obuffer))
+                               &obuffer, &obuffer_size))
         goto exit;
     if (!NI_InitLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                                            lines, ibuffer, mode, cval, &iline_buffer))
+                           lines, ibuffer, ibuffer_size, mode, cval,
+                           &iline_buffer))
         goto exit;
-    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, mode, 0.0,
-                                                 &oline_buffer))
+    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, obuffer_size,
+                           mode, 0.0, &oline_buffer))
         goto exit;
     NPY_BEGIN_THREADS;
     length = PyArray_NDIM(input) > 0 ? PyArray_DIM(input, axis) : 1;
@@ -394,6 +398,7 @@ NI_MinOrMaxFilter1D(PyArrayObject *input, npy_intp filter_size,
     npy_intp lines, kk, ll, length, size1, size2;
     int more;
     double *ibuffer = NULL, *obuffer = NULL;
+    npy_intp ibuffer_size = 0, obuffer_size = 0;
     NI_LineBuffer iline_buffer, oline_buffer;
 
     struct pairs {
@@ -408,16 +413,17 @@ NI_MinOrMaxFilter1D(PyArrayObject *input, npy_intp filter_size,
     /* allocate and initialize the line buffers: */
     lines = -1;
     if (!NI_AllocateLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                            &lines, BUFFER_SIZE, &ibuffer))
+                               &lines, BUFFER_SIZE, &ibuffer, &ibuffer_size))
         goto exit;
     if (!NI_AllocateLineBuffer(output, axis, 0, 0, &lines, BUFFER_SIZE,
-                                                                &obuffer))
+                               &obuffer, &obuffer_size))
         goto exit;
     if (!NI_InitLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                lines, ibuffer, mode, cval, &iline_buffer))
+                           lines, ibuffer, ibuffer_size, mode, cval,
+                           &iline_buffer))
         goto exit;
-    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, mode, 0.0,
-                                                            &oline_buffer))
+    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, obuffer_size,
+                           mode, 0.0, &oline_buffer))
         goto exit;
 
     NPY_BEGIN_THREADS;
@@ -866,6 +872,7 @@ int NI_GenericFilter1D(PyArrayObject *input,
     int more;
     npy_intp ii, lines, length, size1, size2;
     double *ibuffer = NULL, *obuffer = NULL;
+    npy_intp ibuffer_size = 0, obuffer_size = 0;
     NI_LineBuffer iline_buffer, oline_buffer;
 
     /* allocate and initialize the line buffers: */
@@ -873,16 +880,17 @@ int NI_GenericFilter1D(PyArrayObject *input,
     size2 = filter_size - size1 - 1;
     lines = -1;
     if (!NI_AllocateLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                                         &lines, BUFFER_SIZE, &ibuffer))
+                               &lines, BUFFER_SIZE, &ibuffer, &ibuffer_size))
         goto exit;
     if (!NI_AllocateLineBuffer(output, axis, 0, 0, &lines, BUFFER_SIZE,
-                                                         &obuffer))
+                               &obuffer, &obuffer_size))
         goto exit;
     if (!NI_InitLineBuffer(input, axis, size1 + origin, size2 - origin,
-                                                            lines, ibuffer, mode, cval, &iline_buffer))
+                           lines, ibuffer, ibuffer_size, mode, cval,
+                           &iline_buffer))
         goto exit;
-    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, mode, 0.0,
-                                                 &oline_buffer))
+    if (!NI_InitLineBuffer(output, axis, 0, 0, lines, obuffer, obuffer_size,
+                           mode, 0.0, &oline_buffer))
         goto exit;
     length = PyArray_NDIM(input) > 0 ? PyArray_DIM(input, axis) : 1;
     /* iterate over all the array lines: */
