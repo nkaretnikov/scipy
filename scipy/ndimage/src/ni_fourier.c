@@ -186,7 +186,8 @@ int NI_FourierFilter(PyArrayObject *input, PyArrayObject* parameter_array,
                      int filter_type)
 {
     NI_Iterator ii, io;
-    char *pi, *po;
+    char *pi = NULL, *pi_base = NULL, *po = NULL, *po_base = NULL;
+    npy_intp pi_size = 0, po_size = 0;
     double *parameters = NULL, **params = NULL;
     npy_intp kk, hh, size;
     npy_double *iparameters = (void *)PyArray_DATA(parameter_array);
@@ -335,7 +336,11 @@ int NI_FourierFilter(PyArrayObject *input, PyArrayObject* parameter_array,
     if (!NI_InitPointIterator(output, &io))
         goto exit;
     pi = (void *)PyArray_DATA(input);
+    pi_base = pi;
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = po;
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */
     for(hh = 0; hh < size; hh++) {
@@ -433,7 +438,7 @@ int NI_FourierFilter(PyArrayObject *input, PyArrayObject* parameter_array,
                 goto exit;
             }
         }
-        NI_ITERATOR_NEXT2(ii, io, pi, po);
+        NI_ITERATOR_NEXT2(ii, io, pi, pi_base, pi_size, po, po_base, po_size);
     }
 
  exit:
@@ -465,7 +470,8 @@ int NI_FourierShift(PyArrayObject *input, PyArrayObject* shift_array,
             npy_intp n, int axis, PyArrayObject* output)
 {
     NI_Iterator ii, io;
-    char *pi, *po;
+    char *pi = NULL, *pi_base = NULL, *po = NULL, *po_base = NULL;
+    npy_intp pi_size = 0, po_size = 0;
     double *shifts = NULL, **params = NULL;
     npy_intp kk, hh, size;
     npy_double *ishifts = (void *)PyArray_DATA(shift_array);
@@ -531,7 +537,11 @@ int NI_FourierShift(PyArrayObject *input, PyArrayObject* shift_array,
     if (!NI_InitPointIterator(output, &io))
         goto exit;
     pi = (void *)PyArray_DATA(input);
+    pi_base = pi;
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = po;
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */
     for(hh = 0; hh < size; hh++) {
@@ -586,7 +596,7 @@ int NI_FourierShift(PyArrayObject *input, PyArrayObject* shift_array,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_ITERATOR_NEXT2(ii, io, pi, po);
+        NI_ITERATOR_NEXT2(ii, io, pi, pi_base, pi_size, po, po_base, po_size);
     }
 
  exit:

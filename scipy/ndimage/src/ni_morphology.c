@@ -349,7 +349,9 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
     NI_Iterator ii, mi;
     NI_FilterIterator fi, ci;
     npy_bool *ps;
-    char *pi, *ibase, *pm = NULL;
+    char *pi = NULL, *ibase = NULL, *pi_base = NULL, *pm = NULL;
+    char *pm_base = NULL;
+    npy_intp pi_size = 0, pm_size = 0;
     NI_CoordinateBlock *block1 = NULL, *block2 = NULL;
     NI_CoordinateList *list1 = NULL, *list2 = NULL;
     NPY_BEGIN_THREADS_DEF;
@@ -384,6 +386,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
 
     /* get data pointers and size: */
     ibase = pi = (void *)PyArray_DATA(array);
+    pi_base = pi;
+    pi_size = PyArray_NBYTES(array);
 
     if (invert) {
         _true = 0;
@@ -398,6 +402,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
         if (!NI_InitPointIterator(mask, &mi))
             return 0;
         pm = (void *)PyArray_DATA(mask);
+        pm_base = pm;
+        pm_size = PyArray_NBYTES(mask);
 
         size = PyArray_SIZE(array);
 
@@ -408,7 +414,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 *(npy_int8*)pm = (npy_int8)*(npy_bool*)pi;
                 *(npy_bool*)pi = _false;
             }
-            NI_ITERATOR_NEXT2(ii, mi,  pi, pm)
+            NI_ITERATOR_NEXT2(ii, mi, pi, pi_base, pi_size, pm, pm_base,
+                              pm_size);
         }
         NI_ITERATOR_RESET(ii)
         pi = (void *)PyArray_DATA(array);
@@ -550,12 +557,17 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
         NI_ITERATOR_RESET(ii)
         NI_ITERATOR_RESET(mi)
         pi = (void *)PyArray_DATA(array);
+        pi_base = pi;
+        pi_size = PyArray_NBYTES(array);
         pm = (void *)PyArray_DATA(mask);
+        pm_base = pm;
+        pm_size = PyArray_NBYTES(mask);
         for(jj = 0; jj < size; jj++) {
             int value = *(npy_int8*)pm;
             if (value >= 0)
                 *(npy_bool*)pi = value;
-            NI_ITERATOR_NEXT2(ii, mi,  pi, pm)
+            NI_ITERATOR_NEXT2(ii, mi, pi, pi_base, pi_size, pm, pm_base,
+                              pm_size);
         }
     }
 
@@ -588,20 +600,25 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
     int kk;
     NI_BorderElement *border_elements = NULL, *temp;
     NI_Iterator ii, di, fi;
-    char *pi = NULL, *pi_base = NULL, *pd = NULL, *pf = NULL;
-    npy_intp pi_size = 0;
+    char *pi = NULL, *pi_base = NULL, *pd = NULL, *pd_base = NULL, *pf = NULL;
+    char *pf_base = NULL;
+    npy_intp pi_size = 0, pd_size = 0, pf_size = 0;
     npy_double *sampling = sampling_arr ? (void *)PyArray_DATA(sampling_arr) : NULL;
     NPY_BEGIN_THREADS_DEF;
 
     /* check the output arrays: */
     if (distances) {
             pd = (void *)PyArray_DATA(distances);
+            pd_base = pd;
+            pd_size = PyArray_NBYTES(distances);
         if (!NI_InitPointIterator(distances, &di))
             goto exit;
     }
 
     if (features) {
             pf = (void *)PyArray_DATA(features);
+            pf_base = pf;
+            pf_size = PyArray_NBYTES(features);
         if (!NI_InitPointIterator(features, &fi))
             goto exit;
     }
@@ -678,9 +695,11 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
             if (features && distances) {
                 NI_ITERATOR_NEXT3(ii, di, fi, pi, pd, pf);
             } else if (distances) {
-                NI_ITERATOR_NEXT2(ii, di, pi, pd);
+                NI_ITERATOR_NEXT2(ii, di, pi, pi_base, pi_size, pd, pd_base,
+                                  pd_size);
             } else {
-                NI_ITERATOR_NEXT2(ii, fi, pi, pf);
+                NI_ITERATOR_NEXT2(ii, fi, pi, pi_base, pi_size, pf, pf_base,
+                                  pf_size);
             }
         }
         break;
@@ -724,9 +743,11 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
             if (features && distances) {
                 NI_ITERATOR_NEXT3(ii, di, fi, pi, pd, pf);
             } else if (distances) {
-                NI_ITERATOR_NEXT2(ii, di, pi, pd);
+                NI_ITERATOR_NEXT2(ii, di, pi, pi_base, pi_size, pd, pd_base,
+                                  pd_size);
             } else {
-                 NI_ITERATOR_NEXT2(ii, fi, pi, pf);
+                NI_ITERATOR_NEXT2(ii, fi, pi, pi_base, pi_size, pf, pf_base,
+                                  pf_size);
             }
         }
         break;

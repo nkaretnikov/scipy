@@ -127,20 +127,41 @@ int NI_LineIterator(NI_Iterator*, int);
 }
 
 /* go to the next point in two arrays of the same size */
-#define NI_ITERATOR_NEXT2(_it1, _it2, _ptr1, _ptr2)                           \
+#define NI_ITERATOR_NEXT2(_it1, _it2, _ptr1, _ptr1_base, _ptr1_size, _ptr2,   \
+                          _ptr2_base, _ptr2_size)                             \
 {                                                                             \
+    if (NPY_UNLIKELY(!_ptr1 || !_ptr1_base || _ptr1_size <= 0 ||              \
+                     !_ptr2 || !_ptr2_base || _ptr2_size <= 0))               \
+    {                                                                         \
+        PyErr_SetString(PyExc_RuntimeError, "invalid pointer");               \
+        goto exit;                                                            \
+    }                                                                         \
     int _ii;                                                                  \
-    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--)                                \
+    bool _break = false;                                                      \
+    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--) {                              \
         if ((_it1).coordinates[_ii] < (_it1).dimensions[_ii]) {               \
             (_it1).coordinates[_ii]++;                                        \
             _ptr1 += (_it1).strides[_ii];                                     \
             _ptr2 += (_it2).strides[_ii];                                     \
-            break;                                                            \
+            _break = true;                                                    \
         } else {                                                              \
             (_it1).coordinates[_ii] = 0;                                      \
             _ptr1 -= (_it1).backstrides[_ii];                                 \
             _ptr2 -= (_it2).backstrides[_ii];                                 \
         }                                                                     \
+        if (NPY_UNLIKELY(                                                     \
+            _ptr1 < _ptr1_base ||                                             \
+            _ptr1 >= _ptr1_base + _ptr1_size ||                               \
+            _ptr2 < _ptr2_base ||                                             \
+            _ptr2 >= _ptr2_base + _ptr2_size))                                \
+        {                                                                     \
+            PyErr_SetString(PyExc_RuntimeError, "pointer out of bounds");     \
+            goto exit;                                                        \
+        }                                                                     \
+        if (_break) {                                                         \
+            break;                                                            \
+        }                                                                     \
+    }                                                                         \
 }
 
 /* go to the next point in three arrays of the same size */

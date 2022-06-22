@@ -260,8 +260,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
                 PyArrayObject *output, int order, int mode, double cval,
                 int nprepad)
 {
-    char *po = NULL, *po_base = NULL, *pi = NULL, *pc = NULL;
-    npy_intp po_size = 0;
+    char *po = NULL, *po_base = NULL, *pi = NULL, *pc = NULL, *pc_base = NULL;
+    npy_intp po_size = 0, pc_size = 0;
     npy_intp **edge_offsets = NULL, **data_offsets = NULL, filter_size;
     char **edge_grid_const = NULL;
     npy_intp ftmp[NPY_MAXDIMS], *fcoordinates = NULL, *foffsets = NULL;
@@ -293,6 +293,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
         if (!NI_LineIterator(&ic, 0))
             goto exit;
         pc = (void *)(PyArray_DATA(coordinates));
+        pc_base = pc;
+        pc_size = PyArray_NBYTES(coordinates);
     }
 
     /* offsets used at the borders: */
@@ -614,7 +616,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
             goto exit;
         }
         if (coordinates) {
-            NI_ITERATOR_NEXT2(io, ic, po, pc);
+            NI_ITERATOR_NEXT2(io, ic, po, po_base, po_size, pc, pc_base,
+                              pc_size);
         } else {
             NI_ITERATOR_NEXT(io, po, po_base, po_size);
         }
