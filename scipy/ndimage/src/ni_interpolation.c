@@ -260,7 +260,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
                 PyArrayObject *output, int order, int mode, double cval,
                 int nprepad)
 {
-    char *po, *pi, *pc = NULL;
+    char *po = NULL, *po_base = NULL, *pi = NULL, *pc = NULL;
+    npy_intp po_size = 0;
     npy_intp **edge_offsets = NULL, **data_offsets = NULL, filter_size;
     char **edge_grid_const = NULL;
     npy_intp ftmp[NPY_MAXDIMS], *fcoordinates = NULL, *foffsets = NULL;
@@ -363,6 +364,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
     /* get data pointers: */
     pi = (void *)PyArray_DATA(input);
     po = (void *)PyArray_DATA(output);
+    po_base = po;
+    po_size = PyArray_NBYTES(output);
 
     /* make a table of all possible coordinates within the spline filter: */
     fcoordinates = malloc(irank * filter_size * sizeof(npy_intp));
@@ -613,7 +616,7 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
         if (coordinates) {
             NI_ITERATOR_NEXT2(io, ic, po, pc);
         } else {
-            NI_ITERATOR_NEXT(io, po);
+            NI_ITERATOR_NEXT(io, po, po_base, po_size);
         }
     }
 
@@ -644,7 +647,8 @@ int NI_ZoomShift(PyArrayObject *input, PyArrayObject* zoom_ar,
                  PyArrayObject* shift_ar, PyArrayObject *output,
                  int order, int mode, double cval, int nprepad, int grid_mode)
 {
-    char *po, *pi;
+    char *po = NULL, *po_base = NULL, *pi = NULL;
+    npy_intp po_size = 0;
     npy_intp **zeros = NULL, **offsets = NULL, ***edge_offsets = NULL;
     npy_intp ftmp[NPY_MAXDIMS], *fcoordinates = NULL, *foffsets = NULL;
     npy_intp jj, hh, kk, filter_size, odimensions[NPY_MAXDIMS];
@@ -850,6 +854,8 @@ int NI_ZoomShift(PyArrayObject *input, PyArrayObject* zoom_ar,
 
     pi = (void *)PyArray_DATA(input);
     po = (void *)PyArray_DATA(output);
+    po_base = po;
+    po_size = PyArray_NBYTES(output);
 
     /* store all coordinates and offsets with filter: */
     fcoordinates = malloc(rank * filter_size * sizeof(npy_intp));
@@ -993,7 +999,7 @@ int NI_ZoomShift(PyArrayObject *input, PyArrayObject* zoom_ar,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_ITERATOR_NEXT(io, po);
+        NI_ITERATOR_NEXT(io, po, po_base, po_size);
     }
 
  exit:

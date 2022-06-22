@@ -43,6 +43,7 @@
 #undef NO_IMPORT_ARRAY
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <float.h>
 #include <limits.h>
 #include <assert.h>
@@ -95,18 +96,34 @@ int NI_LineIterator(NI_Iterator*, int);
 }
 
 /* go to the next point in a single array */
-#define NI_ITERATOR_NEXT(_it, _ptr)                                           \
+#define NI_ITERATOR_NEXT(_it, _ptr, _ptr_base, _ptr_size)                     \
 {                                                                             \
+    if (NPY_UNLIKELY(!_ptr || !_ptr_base || _ptr_size <= 0)) {                \
+        PyErr_SetString(PyExc_RuntimeError, "invalid pointer");               \
+        goto exit;                                                            \
+    }                                                                         \
     int _ii;                                                                  \
-    for(_ii = (_it).rank_m1; _ii >= 0; _ii--)                                 \
+    bool _break = false;                                                      \
+    for (_ii = (_it).rank_m1; _ii >= 0; _ii--) {                              \
         if ((_it).coordinates[_ii] < (_it).dimensions[_ii]) {                 \
             (_it).coordinates[_ii]++;                                         \
             _ptr += (_it).strides[_ii];                                       \
-            break;                                                            \
+            _break = true;                                                    \
         } else {                                                              \
             (_it).coordinates[_ii] = 0;                                       \
             _ptr -= (_it).backstrides[_ii];                                   \
         }                                                                     \
+        if (NPY_UNLIKELY(                                                     \
+            _ptr < _ptr_base ||                                               \
+            _ptr >= _ptr_base + _ptr_size))                                   \
+        {                                                                     \
+            PyErr_SetString(PyExc_RuntimeError, "pointer out of bounds");     \
+            goto exit;                                                        \
+        }                                                                     \
+        if (_break) {                                                         \
+            break;                                                            \
+        }                                                                     \
+    }                                                                         \
 }
 
 /* go to the next point in two arrays of the same size */

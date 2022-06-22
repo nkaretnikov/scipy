@@ -78,13 +78,16 @@ int NI_FindObjects(PyArrayObject* input, npy_intp max_label,
 {
     npy_intp size, jj;
     NI_Iterator ii;
-    char *pi;
+    char *pi = NULL, *pi_base = NULL;
+    npy_intp pi_size = 0;
     NPY_BEGIN_THREADS_DEF;
 
     NPY_BEGIN_THREADS;
 
     /* get input data, size and iterator: */
     pi = (void *)PyArray_DATA(input);
+    pi_base = pi;
+    pi_size = PyArray_NBYTES(input);
     size = PyArray_SIZE(input);
     if (!NI_InitPointIterator(input, &ii))
         goto exit;
@@ -130,7 +133,7 @@ int NI_FindObjects(PyArrayObject* input, npy_intp max_label,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_ITERATOR_NEXT(ii, pi);
+        NI_ITERATOR_NEXT(ii, pi, pi_base, pi_size);
     }
  exit:
     NPY_END_THREADS;
@@ -211,7 +214,8 @@ typedef struct {
 int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
                                         PyArrayObject* strct, PyArrayObject* output)
 {
-    char *pl, *pm, *pi;
+    char *pl = NULL, *pm = NULL, *pi = NULL, *pi_base = NULL;
+    npy_intp pi_size = 0;
     int ll;
     npy_intp size, jj, hh, kk, maxval;
     npy_intp strides[WS_MAXDIM], coordinates[WS_MAXDIM];
@@ -240,6 +244,8 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
     NPY_BEGIN_THREADS;
 
     pi = (void *)PyArray_DATA(input);
+    pi_base = pi;
+    pi_size = PyArray_NBYTES(input);
     if (!NI_InitPointIterator(input, &ii))
         goto exit;
     /* Initialization and find the maximum of the input. */
@@ -258,9 +264,13 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
         temp[jj].done = 0;
         if (ival > maxval)
             maxval = ival;
-        NI_ITERATOR_NEXT(ii, pi);
+        NI_ITERATOR_NEXT(ii, pi, pi_base, pi_size);
     }
+
     pi = (void *)PyArray_DATA(input);
+    pi_base = pi;
+    pi_size = PyArray_NBYTES(input);
+
     /* Allocate and initialize the storage for the queue. */
     first = malloc((maxval + 1) * sizeof(NI_WatershedElement*));
     last = malloc((maxval + 1) * sizeof(NI_WatershedElement*));

@@ -358,8 +358,15 @@ break
 int NI_ArrayToLineBuffer(NI_LineBuffer *buffer,
                          npy_intp *number_of_lines, int *more)
 {
+    if (NPY_UNLIKELY(!buffer)) {
+        PyErr_SetString(PyExc_RuntimeError, "null pointer");
+        goto exit;
+    }
+
     double *pb = buffer->buffer_data;
-    char *pa;
+    char *pa = NULL;
+    char *buffer_array_base = buffer->array_data;
+    npy_intp buffer_array_size = buffer->array_size;
     npy_intp length = buffer->line_length;
 
     pb += buffer->size1;
@@ -400,16 +407,17 @@ int NI_ArrayToLineBuffer(NI_LineBuffer *buffer,
         default:
             PyErr_Format(PyExc_RuntimeError, "array type %d not supported",
                          buffer->array_type);
-            return 0;
+            goto exit;
         }
         /* goto next line in the array: */
-        NI_ITERATOR_NEXT(buffer->iterator, buffer->array_data);
+        NI_ITERATOR_NEXT(buffer->iterator, buffer->array_data,
+                         buffer_array_base, buffer_array_size);
         /* implement boundary conditions to the line: */
         if (buffer->size1 + buffer->size2 > 0) {
             if (!NI_ExtendLine(pb - buffer->size1, length, buffer->size1,
                                buffer->size2, buffer->extend_mode,
                                buffer->extend_value)) {
-                return 0;
+                goto exit;
             }
         }
         /* The number of the array lines copied: */
@@ -421,6 +429,8 @@ int NI_ArrayToLineBuffer(NI_LineBuffer *buffer,
     /* if not all array lines were processed, *more is set true: */
     *more = buffer->next_line < buffer->array_lines;
     return 1;
+exit:
+    return 0;
 }
 
 #define CASE_COPY_LINE_TO_DATA(_TYPE, _type, _pi, _po, _length, _stride) \
@@ -437,8 +447,15 @@ break
 /* Copy a line from a buffer to an array: */
 int NI_LineBufferToArray(NI_LineBuffer *buffer)
 {
+    if (NPY_UNLIKELY(!buffer)) {
+        PyErr_SetString(PyExc_RuntimeError, "null pointer");
+        goto exit;
+    }
+
     double *pb = buffer->buffer_data;
-    char *pa;
+    char *pa = NULL;
+    char *buffer_array_base = buffer->array_data;
+    npy_intp buffer_array_size = buffer->array_size;
     npy_intp jj, length = buffer->line_length;
 
     pb += buffer->size1;
@@ -478,16 +495,19 @@ int NI_LineBufferToArray(NI_LineBuffer *buffer)
         default:
             PyErr_Format(PyExc_RuntimeError, "array type %d not supported",
                          buffer->array_type);
-            return 0;
+            goto exit;
         }
         /* move to the next line in the array: */
-        NI_ITERATOR_NEXT(buffer->iterator, buffer->array_data);
+        NI_ITERATOR_NEXT(buffer->iterator, buffer->array_data,
+                         buffer_array_base, buffer_array_size);
         /* number of lines copied: */
         ++(buffer->next_line);
         /* move the buffer data pointer to the next line: */
         pb += buffer->line_length + buffer->size1 + buffer->size2;
     }
     return 1;
+exit:
+    return 0;
 }
 
 /******************************************************************/
