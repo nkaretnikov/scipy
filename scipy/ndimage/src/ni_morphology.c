@@ -452,7 +452,7 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 break;
             }
         }
-        NI_ITERATOR_GOTO(ii, current_coordinates1, ibase, pi);
+        NI_ITERATOR_GOTO(ii, current_coordinates1, pi, pi_base, pi_size);
         NI_FILTER_GOTO(fi, ii, 0, oo);
 
         switch (PyArray_TYPE(array)) {

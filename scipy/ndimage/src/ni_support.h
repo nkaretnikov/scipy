@@ -209,13 +209,24 @@ int NI_LineIterator(NI_Iterator*, int);
 }
 
 /* go to an arbitrary point in a single array */
-#define NI_ITERATOR_GOTO(_it, _dest, _base, _ptr)                             \
+#define NI_ITERATOR_GOTO(_it, _dest, _ptr, _ptr_base, _ptr_size)              \
 {                                                                             \
+    if (NPY_UNLIKELY(!_ptr || !_ptr_base || _ptr_size <= 0)) {                \
+        PyErr_SetString(PyExc_RuntimeError, "invalid pointer");               \
+        goto exit;                                                            \
+    }                                                                         \
     int _ii;                                                                  \
-    _ptr = _base;                                                             \
+    _ptr = _ptr_base;                                                         \
     for(_ii = (_it).rank_m1; _ii >= 0; _ii--) {                               \
         _ptr += _dest[_ii] * (_it).strides[_ii];                              \
         (_it).coordinates[_ii] = _dest[_ii];                                  \
+        if (NPY_UNLIKELY(                                                     \
+            _ptr < _ptr_base ||                                               \
+            _ptr >= _ptr_base + _ptr_size))                                   \
+        {                                                                     \
+            PyErr_SetString(PyExc_RuntimeError, "pointer out of bounds");     \
+            goto exit;                                                        \
+        }                                                                     \
     }                                                                         \
 }
 
