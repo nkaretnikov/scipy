@@ -87,73 +87,72 @@ int NI_SubspaceIterator(NI_Iterator*, npy_uint32);
 int NI_LineIterator(NI_Iterator*, int);
 
 /* reset an iterator */
-#define NI_ITERATOR_RESET(iterator)                                           \
+#define NI_ITERATOR_RESET(_it)                                                \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = 0; _ii <= (iterator).rank_m1; _ii++)                            \
-        (iterator).coordinates[_ii] = 0;                                      \
+    for(_ii = 0; _ii <= (_it).rank_m1; _ii++)                                 \
+        (_it).coordinates[_ii] = 0;                                           \
 }
 
 /* go to the next point in a single array */
-#define NI_ITERATOR_NEXT(iterator, pointer)                                   \
+#define NI_ITERATOR_NEXT(_it, _ptr)                                           \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = (iterator).rank_m1; _ii >= 0; _ii--)                            \
-        if ((iterator).coordinates[_ii] < (iterator).dimensions[_ii]) {       \
-            (iterator).coordinates[_ii]++;                                    \
-            pointer += (iterator).strides[_ii];                               \
+    for(_ii = (_it).rank_m1; _ii >= 0; _ii--)                                 \
+        if ((_it).coordinates[_ii] < (_it).dimensions[_ii]) {                 \
+            (_it).coordinates[_ii]++;                                         \
+            _ptr += (_it).strides[_ii];                                       \
             break;                                                            \
         } else {                                                              \
-            (iterator).coordinates[_ii] = 0;                                  \
-            pointer -= (iterator).backstrides[_ii];                           \
+            (_it).coordinates[_ii] = 0;                                       \
+            _ptr -= (_it).backstrides[_ii];                                   \
         }                                                                     \
 }
 
 /* go to the next point in two arrays of the same size */
-#define NI_ITERATOR_NEXT2(iterator1, iterator2,  pointer1, pointer2)          \
+#define NI_ITERATOR_NEXT2(_it1, _it2, _ptr1, _ptr2)                           \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = (iterator1).rank_m1; _ii >= 0; _ii--)                           \
-        if ((iterator1).coordinates[_ii] < (iterator1).dimensions[_ii]) {     \
-            (iterator1).coordinates[_ii]++;                                   \
-            pointer1 += (iterator1).strides[_ii];                             \
-            pointer2 += (iterator2).strides[_ii];                             \
+    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--)                                \
+        if ((_it1).coordinates[_ii] < (_it1).dimensions[_ii]) {               \
+            (_it1).coordinates[_ii]++;                                        \
+            _ptr1 += (_it1).strides[_ii];                                     \
+            _ptr2 += (_it2).strides[_ii];                                     \
             break;                                                            \
         } else {                                                              \
-            (iterator1).coordinates[_ii] = 0;                                 \
-            pointer1 -= (iterator1).backstrides[_ii];                         \
-            pointer2 -= (iterator2).backstrides[_ii];                         \
+            (_it1).coordinates[_ii] = 0;                                      \
+            _ptr1 -= (_it1).backstrides[_ii];                                 \
+            _ptr2 -= (_it2).backstrides[_ii];                                 \
         }                                                                     \
 }
 
 /* go to the next point in three arrays of the same size */
-#define NI_ITERATOR_NEXT3(iterator1, iterator2,  iterator3,                   \
-                          pointer1, pointer2, pointer3)                       \
+#define NI_ITERATOR_NEXT3(_it1, _it2, _it3, _ptr1, _ptr2, _ptr3)              \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = (iterator1).rank_m1; _ii >= 0; _ii--)                           \
-        if ((iterator1).coordinates[_ii] < (iterator1).dimensions[_ii]) {     \
-            (iterator1).coordinates[_ii]++;                                   \
-            pointer1 += (iterator1).strides[_ii];                             \
-            pointer2 += (iterator2).strides[_ii];                             \
-            pointer3 += (iterator3).strides[_ii];                             \
+    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--)                                \
+        if ((_it1).coordinates[_ii] < (_it1).dimensions[_ii]) {               \
+            (_it1).coordinates[_ii]++;                                        \
+            _ptr1 += (_it1).strides[_ii];                                     \
+            _ptr2 += (_it2).strides[_ii];                                     \
+            _ptr3 += (_it3).strides[_ii];                                     \
             break;                                                            \
         } else {                                                              \
-            (iterator1).coordinates[_ii] = 0;                                 \
-            pointer1 -= (iterator1).backstrides[_ii];                         \
-            pointer2 -= (iterator2).backstrides[_ii];                         \
-            pointer3 -= (iterator3).backstrides[_ii];                         \
+            (_it1).coordinates[_ii] = 0;                                      \
+            _ptr1 -= (_it1).backstrides[_ii];                                 \
+            _ptr2 -= (_it2).backstrides[_ii];                                 \
+            _ptr3 -= (_it3).backstrides[_ii];                                 \
         }                                                                     \
 }
 
 /* go to an arbitrary point in a single array */
-#define NI_ITERATOR_GOTO(iterator, destination, base, pointer)                \
+#define NI_ITERATOR_GOTO(_it, _dest, _base, _ptr)                             \
 {                                                                             \
     int _ii;                                                                  \
-    pointer = base;                                                           \
-    for(_ii = (iterator).rank_m1; _ii >= 0; _ii--) {                          \
-        pointer += destination[_ii] * (iterator).strides[_ii];                \
-        (iterator).coordinates[_ii] = destination[_ii];                       \
+    _ptr = _base;                                                             \
+    for(_ii = (_it).rank_m1; _ii >= 0; _ii--) {                               \
+        _ptr += _dest[_ii] * (_it).strides[_ii];                              \
+        (_it).coordinates[_ii] = _dest[_ii];                                  \
     }                                                                         \
 }
 
@@ -216,22 +215,22 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
 
 /* Move to the next point in an array, possible changing the filter
      offsets, to adapt to boundary conditions: */
-#define NI_FILTER_NEXT(iteratorf, iterator1, pointerf, pointer1)              \
+#define NI_FILTER_NEXT(_itf, _it1, _ptrf, _ptr1)                              \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = (iterator1).rank_m1; _ii >= 0; _ii--) {                         \
-        npy_intp _pp = (iterator1).coordinates[_ii];                          \
-        if (_pp < (iterator1).dimensions[_ii]) {                              \
-            if (_pp < (iteratorf).bound1[_ii] ||                              \
-                _pp >= (iteratorf).bound2[_ii])                               \
-                pointerf += (iteratorf).strides[_ii];                         \
-            (iterator1).coordinates[_ii]++;                                   \
-            pointer1 += (iterator1).strides[_ii];                             \
+    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--) {                              \
+        npy_intp _pp = (_it1).coordinates[_ii];                               \
+        if (_pp < (_it1).dimensions[_ii]) {                                   \
+            if (_pp < (_itf).bound1[_ii] ||                                   \
+                _pp >= (_itf).bound2[_ii])                                    \
+                _ptrf += (_itf).strides[_ii];                                 \
+            (_it1).coordinates[_ii]++;                                        \
+            _ptr1 += (_it1).strides[_ii];                                     \
             break;                                                            \
         } else {                                                              \
-            (iterator1).coordinates[_ii] = 0;                                 \
-            pointer1 -= (iterator1).backstrides[_ii];                         \
-            pointerf -= (iteratorf).backstrides[_ii];                         \
+            (_it1).coordinates[_ii] = 0;                                      \
+            _ptr1 -= (_it1).backstrides[_ii];                                 \
+            _ptrf -= (_itf).backstrides[_ii];                                 \
         }                                                                     \
     }                                                                         \
 }
@@ -239,25 +238,24 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
 /* Move to the next point in two arrays, possible changing the pointer
      to the filter offsets when moving into a different region in the
      array: */
-#define NI_FILTER_NEXT2(iteratorf, iterator1, iterator2,                      \
-                        pointerf, pointer1, pointer2)                         \
+#define NI_FILTER_NEXT2(_itf, _it1, _it2, _ptrf, _ptr1, _ptr2)                \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = (iterator1).rank_m1; _ii >= 0; _ii--) {                         \
-        npy_intp _pp = (iterator1).coordinates[_ii];                          \
-        if (_pp < (iterator1).dimensions[_ii]) {                              \
-            if (_pp < (iteratorf).bound1[_ii] ||                              \
-                _pp >= (iteratorf).bound2[_ii])                               \
-                pointerf += (iteratorf).strides[_ii];                         \
-            (iterator1).coordinates[_ii]++;                                   \
-            pointer1 += (iterator1).strides[_ii];                             \
-            pointer2 += (iterator2).strides[_ii];                             \
+    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--) {                              \
+        npy_intp _pp = (_it1).coordinates[_ii];                               \
+        if (_pp < (_it1).dimensions[_ii]) {                                   \
+            if (_pp < (_itf).bound1[_ii] ||                                   \
+                _pp >= (_itf).bound2[_ii])                                    \
+                _ptrf += (_itf).strides[_ii];                                 \
+            (_it1).coordinates[_ii]++;                                        \
+            _ptr1 += (_it1).strides[_ii];                                     \
+            _ptr2 += (_it2).strides[_ii];                                     \
             break;                                                            \
         } else {                                                              \
-            (iterator1).coordinates[_ii] = 0;                                 \
-            pointer1 -= (iterator1).backstrides[_ii];                         \
-            pointer2 -= (iterator2).backstrides[_ii];                         \
-            pointerf -= (iteratorf).backstrides[_ii];                         \
+            (_it1).coordinates[_ii] = 0;                                      \
+            _ptr1 -= (_it1).backstrides[_ii];                                 \
+            _ptr2 -= (_it2).backstrides[_ii];                                 \
+            _ptrf -= (_itf).backstrides[_ii];                                 \
         }                                                                     \
     }                                                                         \
 }
@@ -265,42 +263,41 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
 /* Move to the next point in three arrays, possible changing the pointer
      to the filter offsets when moving into a different region in the
      array: */
-#define NI_FILTER_NEXT3(iteratorf, iterator1, iterator2, iterator3,           \
-                        pointerf, pointer1, pointer2, pointer3)               \
+#define NI_FILTER_NEXT3(_itf, _it1, _it2, _it3, _ptrf, _ptr1, _ptr2, _ptr3)   \
 {                                                                             \
     int _ii;                                                                  \
-    for(_ii = (iterator1).rank_m1; _ii >= 0; _ii--) {                         \
-        npy_intp _pp = (iterator1).coordinates[_ii];                          \
-        if (_pp < (iterator1).dimensions[_ii]) {                              \
-            if (_pp < (iteratorf).bound1[_ii] ||                              \
-                _pp >= (iteratorf).bound2[_ii])                               \
-                pointerf += (iteratorf).strides[_ii];                         \
-            (iterator1).coordinates[_ii]++;                                   \
-            pointer1 += (iterator1).strides[_ii];                             \
-            pointer2 += (iterator2).strides[_ii];                             \
-            pointer3 += (iterator3).strides[_ii];                             \
+    for(_ii = (_it1).rank_m1; _ii >= 0; _ii--) {                              \
+        npy_intp _pp = (_it1).coordinates[_ii];                               \
+        if (_pp < (_it1).dimensions[_ii]) {                                   \
+            if (_pp < (_itf).bound1[_ii] ||                                   \
+                _pp >= (_itf).bound2[_ii])                                    \
+                _ptrf += (_itf).strides[_ii];                                 \
+            (_it1).coordinates[_ii]++;                                        \
+            _ptr1 += (_it1).strides[_ii];                                     \
+            _ptr2 += (_it2).strides[_ii];                                     \
+            _ptr3 += (_it3).strides[_ii];                                     \
             break;                                                            \
         } else {                                                              \
-            (iterator1).coordinates[_ii] = 0;                                 \
-            pointer1 -= (iterator1).backstrides[_ii];                         \
-            pointer2 -= (iterator2).backstrides[_ii];                         \
-            pointer3 -= (iterator3).backstrides[_ii];                         \
-            pointerf -= (iteratorf).backstrides[_ii];                         \
+            (_it1).coordinates[_ii] = 0;                                      \
+            _ptr1 -= (_it1).backstrides[_ii];                                 \
+            _ptr2 -= (_it2).backstrides[_ii];                                 \
+            _ptr3 -= (_it3).backstrides[_ii];                                 \
+            _ptrf -= (_itf).backstrides[_ii];                                 \
         }                                                                     \
     }                                                                         \
 }
 
 /* Move the pointer to the filter offsets according to the given
     coordinates: */
-#define NI_FILTER_GOTO(iteratorf, iterator, fbase, pointerf)                  \
+#define NI_FILTER_GOTO(_itf, _it, _fbase, _ptrf)                              \
 {                                                                             \
     int _ii;                                                                  \
     npy_intp _jj;                                                             \
-    pointerf = fbase;                                                         \
-    for(_ii = iterator.rank_m1; _ii >= 0; _ii--) {                            \
-        npy_intp _pp = iterator.coordinates[_ii];                             \
-        npy_intp b1 = (iteratorf).bound1[_ii];                                \
-        npy_intp b2 = (iteratorf).bound2[_ii];                                \
+    _ptrf = _fbase;                                                           \
+    for(_ii = _it.rank_m1; _ii >= 0; _ii--) {                                 \
+        npy_intp _pp = _it.coordinates[_ii];                                  \
+        npy_intp b1 = (_itf).bound1[_ii];                                     \
+        npy_intp b2 = (_itf).bound2[_ii];                                     \
         if (_pp < b1) {                                                       \
                 _jj = _pp;                                                    \
         } else if (_pp > b2 && b2 >= b1) {                                    \
@@ -308,7 +305,7 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
         } else {                                                              \
                 _jj = b1;                                                     \
         }                                                                     \
-        pointerf += (iteratorf).strides[_ii] * _jj;                           \
+        _ptrf += (_itf).strides[_ii] * _jj;                                   \
     }                                                                         \
 }
 
