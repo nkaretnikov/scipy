@@ -281,8 +281,8 @@ int NI_InitFilterIterator(int, npy_intp*, npy_intp, npy_intp*,
 /* Calculate the offsets to the filter points, for all border regions and
    the interior of the array: */
 int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
-                         npy_intp*, NI_ExtendMode, npy_intp**,
-                         npy_intp*, npy_intp**);
+                         npy_intp*, NI_ExtendMode, npy_intp**, npy_intp*,
+                         npy_intp*, npy_intp**, npy_intp*);
 
 /* Move to the next point in an array, possible changing the filter
    offsets, to adapt to boundary conditions: */

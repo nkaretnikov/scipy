@@ -112,9 +112,12 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
         pm = (void *)PyArray_DATA(mask);
     }
     /* calculate the filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(input, ps, PyArray_DIMS(strct), origins,
-                              NI_EXTEND_CONSTANT, &offsets, &border_flag_value,
-                              NULL)) {
+                              NI_EXTEND_CONSTANT, &offsets, &offsets_size,
+                              &border_flag_value, NULL,
+                              &_coordinate_offsets_size)) {
         goto exit;
     }
     /* initialize input element iterator: */
@@ -368,9 +371,12 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
         if (ps[jj]) ++struct_size;
 
     /* calculate the filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(array, ps, PyArray_DIMS(strct), origins,
-                              NI_EXTEND_CONSTANT, &offsets,
-                              &border_flag_value, &coordinate_offsets)) {
+                              NI_EXTEND_CONSTANT, &offsets, &offsets_size,
+                              &border_flag_value, &coordinate_offsets,
+                              &_coordinate_offsets_size)) {
         goto exit;
     }
 
@@ -847,9 +853,11 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
     if (!NI_InitPointIterator(distances, &di))
         goto exit;
     /* calculate the filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(distances, footprint, PyArray_DIMS(strct), NULL,
-                              NI_EXTEND_CONSTANT, &offsets, &mask_value,
-                              NULL)) {
+                              NI_EXTEND_CONSTANT, &offsets, &offsets_size,
+                              &mask_value, NULL, &_coordinate_offsets_size)) {
         goto exit;
     }
     /* initialize filter iterator: */
@@ -866,9 +874,12 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
         if (!NI_InitPointIterator(features, &fi))
             goto exit;
         /* calculate the filter offsets: */
+        npy_intp foffsets_size = 0;
+        npy_intp _coordinate_foffsets_size = 0;
         if (!NI_InitFilterOffsets(features, footprint, PyArray_DIMS(strct),
-                                  NULL, NI_EXTEND_CONSTANT, &foffsets, &dummy,
-                                  NULL)) {
+                                  NULL, NI_EXTEND_CONSTANT, &foffsets,
+                                  &foffsets_size, &dummy, NULL,
+                                  &_coordinate_foffsets_size)) {
             goto exit;
         }
         /* initialize filter iterator: */

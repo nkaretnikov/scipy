@@ -526,14 +526,25 @@ NI_InitFilterIterator(int rank, npy_intp *filter_shape,
      the interior of the array: */
 int NI_InitFilterOffsets(PyArrayObject *array, npy_bool *footprint,
          npy_intp *filter_shape, npy_intp* origins,
-         NI_ExtendMode mode, npy_intp **offsets, npy_intp *border_flag_value,
-         npy_intp **coordinate_offsets)
+         NI_ExtendMode mode, npy_intp **offsets, npy_intp *offsets_bytes,
+         npy_intp *border_flag_value,
+         npy_intp **coordinate_offsets, npy_intp *coordinate_offsets_bytes)
 {
     int rank, ii;
     npy_intp kk, ll, filter_size = 1, offsets_size = 1, max_size = 0;
     npy_intp max_stride = 0, *ashape = NULL, *astrides = NULL;
     npy_intp footprint_size = 0, coordinates[NPY_MAXDIMS], position[NPY_MAXDIMS];
     npy_intp fshape[NPY_MAXDIMS], forigins[NPY_MAXDIMS], *po, *pc = NULL;
+
+    if (!offsets_bytes) {
+        PyErr_SetString(PyExc_RuntimeError, "offsets_bytes is null");
+        goto exit;
+    }
+
+    if (!coordinate_offsets_bytes) {
+        PyErr_SetString(PyExc_RuntimeError, "coordinate_offsets_bytes is null");
+        goto exit;
+    }
 
     rank = PyArray_NDIM(array);
     ashape = PyArray_DIMS(array);
@@ -557,14 +568,16 @@ int NI_InitFilterOffsets(PyArrayObject *array, npy_bool *footprint,
     for(ii = 0; ii < rank; ii++)
         offsets_size *= (ashape[ii] < fshape[ii] ? ashape[ii] : fshape[ii]);
     /* allocate offsets data: */
-    *offsets = malloc(offsets_size * footprint_size * sizeof(npy_intp));
+    *offsets_bytes = offsets_size * footprint_size * sizeof(npy_intp);
+    *offsets = malloc(*offsets_bytes);
     if (!*offsets) {
         PyErr_NoMemory();
         goto exit;
     }
     if (coordinate_offsets) {
-        *coordinate_offsets = malloc(offsets_size * rank
-                                     * footprint_size * sizeof(npy_intp));
+        *coordinate_offsets_bytes = offsets_size * rank
+                                    * footprint_size * sizeof(npy_intp);
+        *coordinate_offsets = malloc(*coordinate_offsets_bytes);
         if (!*coordinate_offsets) {
             PyErr_NoMemory();
             goto exit;

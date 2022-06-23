@@ -217,8 +217,12 @@ int NI_Correlate(PyArrayObject* input, PyArrayObject* weights,
         }
     }
     /* initialize filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(input, pf, PyArray_DIMS(weights), origins,
-                              mode, &offsets, &border_flag_value, NULL)) {
+                              mode, &offsets, &offsets_size,
+                              &border_flag_value, NULL,
+                              &_coordinate_offsets_size)) {
         goto exit;
     }
     /* initialize filter iterator: */
@@ -606,8 +610,12 @@ int NI_MinOrMaxFilter(PyArrayObject* input, PyArrayObject* footprint,
                 ss[jj++] = minimum ? -ps[kk] : ps[kk];
     }
     /* initialize filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(input, pf, PyArray_DIMS(footprint), origins,
-                              mode, &offsets, &border_flag_value, NULL)) {
+                              mode, &offsets, &offsets_size,
+                              &border_flag_value, NULL,
+                              &_coordinate_offsets_size)) {
         goto exit;
     }
     /* initialize filter iterator: */
@@ -797,8 +805,12 @@ int NI_RankFilter(PyArrayObject* input, int rank,
     /* iterator over the elements: */
     oo = offsets;
     /* initialize filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(input, pf, PyArray_DIMS(footprint), origins,
-                              mode, &offsets, &border_flag_value, NULL)) {
+                              mode, &offsets, &offsets_size,
+                              &border_flag_value, NULL,
+                              &_coordinate_offsets_size)) {
         goto exit;
     }
     /* initialize filter iterator: */
@@ -1013,8 +1025,12 @@ int NI_GenericFilter(PyArrayObject* input,
             ++filter_size;
     }
     /* initialize filter offsets: */
+    npy_intp offsets_size = 0;
+    npy_intp _coordinate_offsets_size = 0;
     if (!NI_InitFilterOffsets(input, pf, PyArray_DIMS(footprint), origins,
-                              mode, &offsets, &border_flag_value, NULL)) {
+                              mode, &offsets, &offsets_size,
+                              &border_flag_value, NULL,
+                              &_coordinate_offsets_size)) {
         goto exit;
     }
     /* initialize filter iterator: */
