@@ -96,8 +96,8 @@ int NI_Correlate1D(PyArrayObject *input, PyArrayObject *weights,
         /* iterate over the lines in the buffers: */
         for(ii = 0; ii < lines; ii++) {
             /* get lines: */
-            double *iline = NI_GET_LINE(iline_buffer, ii) + size1;
-            double *oline = NI_GET_LINE(oline_buffer, ii);
+            double *iline = NI_GetLine(&iline_buffer, ii) + size1;
+            double *oline = NI_GetLine(&oline_buffer, ii);
             /* the correlation calculation: */
             if (symmetric > 0) {
                 for(ll = 0; ll < length; ll++) {
@@ -294,7 +294,7 @@ int NI_Correlate(PyArrayObject* input, PyArrayObject* weights,
                 err = 1;
                 goto exit;
         }
-        NI_FILTER_NEXT2(fi, ii, io, oo, pi, po);
+        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
     }
 exit:
     NPY_END_THREADS;
@@ -346,8 +346,8 @@ NI_UniformFilter1D(PyArrayObject *input, npy_intp filter_size,
         /* iterate over the lines in the buffers: */
         for(kk = 0; kk < lines; kk++) {
             /* get lines: */
-            double *iline = NI_GET_LINE(iline_buffer, kk);
-            double *oline = NI_GET_LINE(oline_buffer, kk);
+            double *iline = NI_GetLine(&iline_buffer, kk);
+            double *oline = NI_GetLine(&oline_buffer, kk);
             /* do the uniform filter: */
             double tmp = 0.0;
             double *l1 = iline;
@@ -439,8 +439,8 @@ NI_MinOrMaxFilter1D(PyArrayObject *input, npy_intp filter_size,
         /* iterate over the lines in the buffers: */
         for(kk = 0; kk < lines; kk++) {
             /* get lines: */
-            double *iline = NI_GET_LINE(iline_buffer, kk);
-            double *oline = NI_GET_LINE(oline_buffer, kk);
+            double *iline = NI_GetLine(&iline_buffer, kk);
+            double *oline = NI_GetLine(&oline_buffer, kk);
 
             /* This check could be moved out to the Python wrapper */
             if (filter_size == 1) {
@@ -660,7 +660,7 @@ int NI_MinOrMaxFilter(PyArrayObject* input, PyArrayObject* footprint,
                 err = 1;
                 goto exit;
         }
-        NI_FILTER_NEXT2(fi, ii, io, oo, pi, po);
+        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
     }
 exit:
     NPY_END_THREADS;
@@ -846,7 +846,7 @@ int NI_RankFilter(PyArrayObject* input, int rank,
                 err = 1;
                 goto exit;
         }
-        NI_FILTER_NEXT2(fi, ii, io, oo, pi, po);
+        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
     }
 exit:
     NPY_END_THREADS;
@@ -894,8 +894,8 @@ int NI_GenericFilter1D(PyArrayObject *input,
         /* iterate over the lines in the buffers: */
         for(ii = 0; ii < lines; ii++) {
             /* get lines: */
-            double *iline = NI_GET_LINE(iline_buffer, ii);
-            double *oline = NI_GET_LINE(oline_buffer, ii);
+            double *iline = NI_GetLine(&iline_buffer, ii);
+            double *oline = NI_GetLine(&oline_buffer, ii);
             if (!function(iline, length + size1 + size2, oline, length, data)) {
                 if (!PyErr_Occurred()) {
                     PyErr_SetString(PyExc_RuntimeError,
@@ -1055,7 +1055,7 @@ int NI_GenericFilter(PyArrayObject* input,
                                 "array type not supported");
                 goto exit;
         }
-        NI_FILTER_NEXT2(fi, ii, io, oo, pi, po);
+        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
     }
 exit:
     free(offsets);

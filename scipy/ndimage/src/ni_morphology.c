@@ -283,9 +283,9 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
             }
         }
         if (mask) {
-            NI_FILTER_NEXT3(fi, ii, io, mi, oo, pi, po, pm);
+            NI_FilterNext3(&fi, &ii, &io, &mi, &oo, &pi, &po, &pm);
         } else {
-            NI_FILTER_NEXT2(fi, ii, io, oo, pi, po);
+            NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
         }
     }
 
@@ -408,9 +408,9 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 *(npy_int8*)pm = (npy_int8)*(npy_bool*)pi;
                 *(npy_bool*)pi = _false;
             }
-            NI_ITERATOR_NEXT2(ii, mi,  pi, pm)
+            NI_IteratorNext2(&ii, &mi,  &pi, &pm);
         }
-        NI_ITERATOR_RESET(ii)
+        NI_IteratorReset(&ii);
         pi = (void *)PyArray_DATA(array);
     }
 
@@ -445,8 +445,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 break;
             }
         }
-        NI_ITERATOR_GOTO(ii, current_coordinates1, ibase, pi);
-        NI_FILTER_GOTO(fi, ii, 0, oo);
+        NI_IteratorGoto(&ii, current_coordinates1, ibase, &pi);
+        NI_FilterGoto(&fi, &ii, 0, &oo);
 
         switch (PyArray_TYPE(array)) {
             CASE_ERODE_POINT2(NPY_BOOL, npy_bool,
@@ -547,15 +547,15 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
     }
 
     if (mask) {
-        NI_ITERATOR_RESET(ii)
-        NI_ITERATOR_RESET(mi)
+        NI_IteratorReset(&ii);
+        NI_IteratorReset(&mi);
         pi = (void *)PyArray_DATA(array);
         pm = (void *)PyArray_DATA(mask);
         for(jj = 0; jj < size; jj++) {
             int value = *(npy_int8*)pm;
             if (value >= 0)
                 *(npy_bool*)pi = value;
-            NI_ITERATOR_NEXT2(ii, mi,  pi, pm)
+            NI_IteratorNext2(&ii, &mi, &pi, &pm);
         }
     }
 
@@ -631,12 +631,12 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                 temp->coordinates[kk] = ii.coordinates[kk];
             }
         }
-        NI_ITERATOR_NEXT(ii, pi);
+        NI_IteratorNext(&ii, &pi);
     }
 
     NPY_BEGIN_THREADS;
 
-    NI_ITERATOR_RESET(ii);
+    NI_IteratorReset(&ii);
     pi = (void *)PyArray_DATA(input);
 
     switch(metric) {
@@ -671,11 +671,11 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                NI_ITERATOR_NEXT3(ii, di, fi, pi, pd, pf);
+                NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf);
             } else if (distances) {
-                NI_ITERATOR_NEXT2(ii, di, pi, pd);
+                NI_IteratorNext2(&ii, &di, &pi, &pd);
             } else {
-                NI_ITERATOR_NEXT2(ii, fi, pi, pf);
+                NI_IteratorNext2(&ii, &fi, &pi, &pf);
             }
         }
         break;
@@ -717,11 +717,11 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                NI_ITERATOR_NEXT3(ii, di, fi, pi, pd, pf);
+                NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf);
             } else if (distances) {
-                NI_ITERATOR_NEXT2(ii, di, pi, pd);
+                NI_IteratorNext2(&ii, &di, &pi, &pd);
             } else {
-                 NI_ITERATOR_NEXT2(ii, fi, pi, pf);
+                NI_IteratorNext2(&ii, &fi, &pi, &pf);
             }
         }
         break;
@@ -840,9 +840,9 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
                 *(npy_int32*)pf = *(npy_int32*)(pf + min_offset);
         }
         if (features) {
-            NI_FILTER_NEXT(ti, fi, foo, pf);
+            NI_FilterNext(&ti, &fi, &foo, &pf);
         }
-        NI_FILTER_NEXT(si, di, oo, pd);
+        NI_FilterNext(&si, &di, &oo, &pd);
     }
 
  exit:
@@ -994,7 +994,7 @@ static void _ComputeFT(char *pi, char *pf, npy_intp *ishape,
                 coor[kk] = ii.coordinates[kk];
             _VoronoiFT(tf, ishape[d], coor, rank, d, fstrides[d + 1],
                                  fstrides[0], f, g, sampling);
-            NI_ITERATOR_NEXT(ii, tf);
+            NI_IteratorNext(&ii, &tf);
         }
         for(kk = 0; kk < d; kk++)
             coor[kk] = 0;
