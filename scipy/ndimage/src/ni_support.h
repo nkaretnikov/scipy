@@ -42,6 +42,7 @@
 #include "nd_image.h"
 #undef NO_IMPORT_ARRAY
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <float.h>
 #include <limits.h>
@@ -86,16 +87,28 @@ int NI_SubspaceIterator(NI_Iterator*, npy_uint32);
 int NI_LineIterator(NI_Iterator*, int);
 
 /* reset an iterator */
-static inline void NI_IteratorReset(NI_Iterator *it)
+static inline bool NI_IteratorReset(NI_Iterator *it)
 {
+    if (NPY_UNLIKELY(!it)) {
+        goto err;
+    }
+
     for (int ii = 0; ii <= it->rank_m1; ii++) {
         it->coordinates[ii] = 0;
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* go to the next point in a single array */
-static inline void NI_IteratorNext(NI_Iterator *it, void **ptr)
+static inline bool NI_IteratorNext(NI_Iterator *it, void **ptr)
 {
+    if (NPY_UNLIKELY(!it || !ptr)) {
+        goto err;
+    }
+
     for (int ii = it->rank_m1; ii >= 0; ii--) {
         if (it->coordinates[ii] < it->dimensions[ii]) {
             it->coordinates[ii]++;
@@ -107,15 +120,23 @@ static inline void NI_IteratorNext(NI_Iterator *it, void **ptr)
             *ptr -= it->backstrides[ii];
         }
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* go to the next point in two arrays of the same size */
-static inline void NI_IteratorNext2(
+static inline bool NI_IteratorNext2(
     NI_Iterator *it1,
     NI_Iterator *it2,
     void **ptr1,
     void **ptr2)
 {
+    if (NPY_UNLIKELY(!it1 || !it2 || !ptr1 || !ptr2)) {
+        goto err;
+    }
+
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         if (it1->coordinates[ii] < it1->dimensions[ii]) {
             it1->coordinates[ii]++;
@@ -129,10 +150,14 @@ static inline void NI_IteratorNext2(
             *ptr2 -= it2->backstrides[ii];
         }
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* go to the next point in three arrays of the same size */
-static inline void NI_IteratorNext3(
+static inline bool NI_IteratorNext3(
     NI_Iterator *it1,
     NI_Iterator *it2,
     NI_Iterator *it3,
@@ -140,6 +165,10 @@ static inline void NI_IteratorNext3(
     void **ptr2,
     void **ptr3)
 {
+    if (NPY_UNLIKELY(!it1 || !it2 || !it3 || !ptr1 || !ptr2 || !ptr3)) {
+        goto err;
+    }
+
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         if (it1->coordinates[ii] < it1->dimensions[ii]) {
             it1->coordinates[ii]++;
@@ -155,21 +184,33 @@ static inline void NI_IteratorNext3(
             *ptr3 -= it3->backstrides[ii];
         }
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* go to an arbitrary point in a single array */
-static inline void NI_IteratorGoto(
+static inline bool NI_IteratorGoto(
     NI_Iterator *it,
     npy_intp *dest,
     void *base,
     void **ptr)
 {
+    if (NPY_UNLIKELY(!it || !dest || !ptr)) {  /* skip base */
+        goto err;
+    }
+
     *ptr = base;
 
     for (int ii = it->rank_m1; ii >= 0; ii--) {
         *ptr += dest[ii] * it->strides[ii];
         it->coordinates[ii] = dest[ii];
     }
+
+    return true;
+err:
+    return false;
 }
 
 /******************************************************************/
@@ -189,10 +230,21 @@ typedef struct {
 } NI_LineBuffer;
 
 /* Get the next line being processed: */
-static inline double* NI_GetLine(NI_LineBuffer *buf, npy_intp line)
+static inline bool NI_GetLine(
+    NI_LineBuffer *buf,
+    npy_intp line,
+    double **res)
 {
-    return buf->buffer_data + line *
+    if (NPY_UNLIKELY(!buf || !res)) {
+        goto err;
+    }
+
+    *res = buf->buffer_data + line *
         (buf->line_length + buf->size1 + buf->size2);
+
+    return true;
+err:
+    return false;
 }
 
 /* Allocate line buffer data */
@@ -234,12 +286,16 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
 
 /* Move to the next point in an array, possible changing the filter
    offsets, to adapt to boundary conditions: */
-static inline void NI_FilterNext(
+static inline bool NI_FilterNext(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
     void ***ptrf,
     void **ptr1)
 {
+    if (NPY_UNLIKELY(!itf || !it1 || !ptrf || !ptr1)) {
+        goto err;
+    }
+
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         npy_intp pp = it1->coordinates[ii];
 
@@ -259,12 +315,16 @@ static inline void NI_FilterNext(
             *ptrf -= itf->backstrides[ii];
         }
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* Move to the next point in two arrays, possible changing the pointer
    to the filter offsets when moving into a different region in the
    array: */
-static inline void NI_FilterNext2(
+static inline bool NI_FilterNext2(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
     NI_Iterator *it2,
@@ -272,6 +332,10 @@ static inline void NI_FilterNext2(
     void **ptr1,
     void **ptr2)
 {
+    if (NPY_UNLIKELY(!itf || !it1 || !it2 || !ptrf || !ptr1 || !ptr2)) {
+        goto err;
+    }
+
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         npy_intp pp = it1->coordinates[ii];
 
@@ -293,12 +357,16 @@ static inline void NI_FilterNext2(
             *ptrf -= itf->backstrides[ii];
         }
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* Move to the next point in three arrays, possible changing the pointer
    to the filter offsets when moving into a different region in the
    array: */
-static inline void NI_FilterNext3(
+static inline bool NI_FilterNext3(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
     NI_Iterator *it2,
@@ -308,6 +376,11 @@ static inline void NI_FilterNext3(
     void **ptr2,
     void **ptr3)
 {
+    if (NPY_UNLIKELY(!itf || !it1 || !it2 || !it3 ||
+                     !ptrf || !ptr1 || !ptr2 || !ptr3)) {
+        goto err;
+    }
+
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         npy_intp pp = it1->coordinates[ii];
 
@@ -331,16 +404,24 @@ static inline void NI_FilterNext3(
             *ptrf -= itf->backstrides[ii];
         }
     }
+
+    return true;
+err:
+    return false;
 }
 
 /* Move the pointer to the filter offsets according to the given
    coordinates: */
-static inline void NI_FilterGoto(
+static inline bool NI_FilterGoto(
     NI_FilterIterator *itf,
     NI_Iterator *it,
     void *fbase,
     void **ptrf)
 {
+    if (NPY_UNLIKELY(!itf || !it || !ptrf)) {  /* skip fbase */
+        goto err;
+    }
+
     npy_intp jj = 0;
     *ptrf = fbase;
 
@@ -359,6 +440,10 @@ static inline void NI_FilterGoto(
 
         *ptrf += itf->strides[ii] * jj;
     }
+
+    return true;
+err:
+    return false;
 }
 
 typedef struct {

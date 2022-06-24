@@ -96,8 +96,19 @@ int NI_Correlate1D(PyArrayObject *input, PyArrayObject *weights,
         /* iterate over the lines in the buffers: */
         for(ii = 0; ii < lines; ii++) {
             /* get lines: */
-            double *iline = NI_GetLine(&iline_buffer, ii) + size1;
-            double *oline = NI_GetLine(&oline_buffer, ii);
+            double *iline = 0;
+            double *oline = 0;
+            if (!NI_GetLine(&iline_buffer, ii, &iline)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
+            iline += size1;
+            if (!NI_GetLine(&oline_buffer, ii, &oline)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
             /* the correlation calculation: */
             if (symmetric > 0) {
                 for(ll = 0; ll < length; ll++) {
@@ -294,7 +305,11 @@ int NI_Correlate(PyArrayObject* input, PyArrayObject* weights,
                 err = 1;
                 goto exit;
         }
-        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 exit:
     NPY_END_THREADS;
@@ -346,8 +361,18 @@ NI_UniformFilter1D(PyArrayObject *input, npy_intp filter_size,
         /* iterate over the lines in the buffers: */
         for(kk = 0; kk < lines; kk++) {
             /* get lines: */
-            double *iline = NI_GetLine(&iline_buffer, kk);
-            double *oline = NI_GetLine(&oline_buffer, kk);
+            double *iline = 0;
+            double *oline = 0;
+            if (!NI_GetLine(&iline_buffer, kk, &iline)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
+            if (!NI_GetLine(&oline_buffer, kk, &oline)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
             /* do the uniform filter: */
             double tmp = 0.0;
             double *l1 = iline;
@@ -439,8 +464,18 @@ NI_MinOrMaxFilter1D(PyArrayObject *input, npy_intp filter_size,
         /* iterate over the lines in the buffers: */
         for(kk = 0; kk < lines; kk++) {
             /* get lines: */
-            double *iline = NI_GetLine(&iline_buffer, kk);
-            double *oline = NI_GetLine(&oline_buffer, kk);
+            double *iline = 0;
+            double *oline = 0;
+            if (!NI_GetLine(&iline_buffer, kk, &iline)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
+            if (!NI_GetLine(&oline_buffer, kk, &oline)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
 
             /* This check could be moved out to the Python wrapper */
             if (filter_size == 1) {
@@ -660,7 +695,11 @@ int NI_MinOrMaxFilter(PyArrayObject* input, PyArrayObject* footprint,
                 err = 1;
                 goto exit;
         }
-        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 exit:
     NPY_END_THREADS;
@@ -846,7 +885,11 @@ int NI_RankFilter(PyArrayObject* input, int rank,
                 err = 1;
                 goto exit;
         }
-        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 exit:
     NPY_END_THREADS;
@@ -894,8 +937,17 @@ int NI_GenericFilter1D(PyArrayObject *input,
         /* iterate over the lines in the buffers: */
         for(ii = 0; ii < lines; ii++) {
             /* get lines: */
-            double *iline = NI_GetLine(&iline_buffer, ii);
-            double *oline = NI_GetLine(&oline_buffer, ii);
+            double *iline = 0;
+            double *oline = 0;
+            if (!NI_GetLine(&iline_buffer, ii, &iline)) {
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
+            if (!NI_GetLine(&oline_buffer, ii, &oline)) {
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
+
             if (!function(iline, length + size1 + size2, oline, length, data)) {
                 if (!PyErr_Occurred()) {
                     PyErr_SetString(PyExc_RuntimeError,
@@ -1055,7 +1107,10 @@ int NI_GenericFilter(PyArrayObject* input,
                                 "array type not supported");
                 goto exit;
         }
-        NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 exit:
     free(offsets);

@@ -283,9 +283,17 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
             }
         }
         if (mask) {
-            NI_FilterNext3(&fi, &ii, &io, &mi, &oo, &pi, &po, &pm);
+            if (!NI_FilterNext3(&fi, &ii, &io, &mi, &oo, &pi, &po, &pm)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
         } else {
-            NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po);
+            if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
         }
     }
 
@@ -408,9 +416,17 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 *(npy_int8*)pm = (npy_int8)*(npy_bool*)pi;
                 *(npy_bool*)pi = _false;
             }
-            NI_IteratorNext2(&ii, &mi,  &pi, &pm);
+            if (!NI_IteratorNext2(&ii, &mi,  &pi, &pm)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
         }
-        NI_IteratorReset(&ii);
+        if (!NI_IteratorReset(&ii)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
         pi = (void *)PyArray_DATA(array);
     }
 
@@ -445,8 +461,16 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 break;
             }
         }
-        NI_IteratorGoto(&ii, current_coordinates1, ibase, &pi);
-        NI_FilterGoto(&fi, &ii, 0, &oo);
+        if (!NI_IteratorGoto(&ii, current_coordinates1, ibase, &pi)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
+        if (!NI_FilterGoto(&fi, &ii, 0, &oo)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
 
         switch (PyArray_TYPE(array)) {
             CASE_ERODE_POINT2(NPY_BOOL, npy_bool,
@@ -547,15 +571,27 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
     }
 
     if (mask) {
-       NI_IteratorReset(&ii);
-       NI_IteratorReset(&mi);
+        if (!NI_IteratorReset(&ii)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
+        if (!NI_IteratorReset(&mi)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
         pi = (void *)PyArray_DATA(array);
         pm = (void *)PyArray_DATA(mask);
         for(jj = 0; jj < size; jj++) {
             int value = *(npy_int8*)pm;
             if (value >= 0)
                 *(npy_bool*)pi = value;
-            NI_IteratorNext2(&ii, &mi, &pi, &pm);
+            if (!NI_IteratorNext2(&ii, &mi, &pi, &pm)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
         }
     }
 
@@ -631,12 +667,20 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                 temp->coordinates[kk] = ii.coordinates[kk];
             }
         }
-        NI_IteratorNext(&ii, &pi);
+        if (!NI_IteratorNext(&ii, &pi)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 
     NPY_BEGIN_THREADS;
 
-   NI_IteratorReset(&ii);
+    if (!NI_IteratorReset(&ii)) {
+        NPY_END_THREADS;
+        PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+        goto exit;
+    }
     pi = (void *)PyArray_DATA(input);
 
     switch(metric) {
@@ -671,11 +715,23 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf);
+                if (!NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf)) {
+                    NPY_END_THREADS;
+                    PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                    goto exit;
+                }
             } else if (distances) {
-                NI_IteratorNext2(&ii, &di, &pi, &pd);
+                if (!NI_IteratorNext2(&ii, &di, &pi, &pd)) {
+                    NPY_END_THREADS;
+                    PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                    goto exit;
+                }
             } else {
-                NI_IteratorNext2(&ii, &fi, &pi, &pf);
+                if (!NI_IteratorNext2(&ii, &fi, &pi, &pf)) {
+                    NPY_END_THREADS;
+                    PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                    goto exit;
+                }
             }
         }
         break;
@@ -717,11 +773,23 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf);
+                if (!NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf)) {
+                    NPY_END_THREADS;
+                    PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                    goto exit;
+                }
             } else if (distances) {
-                NI_IteratorNext2(&ii, &di, &pi, &pd);
+                if (!NI_IteratorNext2(&ii, &di, &pi, &pd)) {
+                    NPY_END_THREADS;
+                    PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                    goto exit;
+                }
             } else {
-                NI_IteratorNext2(&ii, &fi, &pi, &pf);
+                if (!NI_IteratorNext2(&ii, &fi, &pi, &pf)) {
+                    NPY_END_THREADS;
+                    PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                    goto exit;
+                }
             }
         }
         break;
@@ -840,9 +908,17 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
                 *(npy_int32*)pf = *(npy_int32*)(pf + min_offset);
         }
         if (features) {
-            NI_FilterNext(&ti, &fi, &foo, &pf);
+            if (!NI_FilterNext(&ti, &fi, &foo, &pf)) {
+                NPY_END_THREADS;
+                PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+                goto exit;
+            }
         }
-        NI_FilterNext(&si, &di, &oo, &pd);
+        if (!NI_FilterNext(&si, &di, &oo, &pd)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 
  exit:
@@ -994,7 +1070,9 @@ static void _ComputeFT(char *pi, char *pf, npy_intp *ishape,
                 coor[kk] = ii.coordinates[kk];
             _VoronoiFT(tf, ishape[d], coor, rank, d, fstrides[d + 1],
                                  fstrides[0], f, g, sampling);
-            NI_IteratorNext(&ii, &tf);
+            if (!NI_IteratorNext(&ii, &tf)) {
+                return;  /* invalid pointer */
+            }
         }
         for(kk = 0; kk < d; kk++)
             coor[kk] = 0;

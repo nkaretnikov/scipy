@@ -433,7 +433,11 @@ int NI_FourierFilter(PyArrayObject *input, PyArrayObject* parameter_array,
                 goto exit;
             }
         }
-        NI_IteratorNext2(&ii, &io, &pi, &po);
+        if (!NI_IteratorNext2(&ii, &io, &pi, &po)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 
  exit:
@@ -586,7 +590,11 @@ int NI_FourierShift(PyArrayObject *input, PyArrayObject* shift_array,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_IteratorNext2(&ii, &io, &pi, &po);
+        if (!NI_IteratorNext2(&ii, &io, &pi, &po)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
 
  exit:
