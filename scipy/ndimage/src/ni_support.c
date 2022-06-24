@@ -391,7 +391,9 @@ int NI_ArrayToLineBuffer(NI_LineBuffer *buffer,
             return 0;
         }
         /* goto next line in the array: */
-        NI_IteratorNext(&buffer->iterator, &buffer->array_data);
+        if (!NI_IteratorNext(&buffer->iterator, &buffer->array_data)) {
+            return 0;  /* invalid pointer */
+        }
         /* implement boundary conditions to the line: */
         if (buffer->size1 + buffer->size2 > 0) {
             if (!NI_ExtendLine(pb - buffer->size1, length, buffer->size1,
@@ -469,7 +471,9 @@ int NI_LineBufferToArray(NI_LineBuffer *buffer)
             return 0;
         }
         /* move to the next line in the array: */
-        NI_IteratorNext(&buffer->iterator, &buffer->array_data);
+        if (!NI_IteratorNext(&buffer->iterator, &buffer->array_data)) {
+            return 0;  /* invalid pointer */
+        }
         /* number of lines copied: */
         ++(buffer->next_line);
         /* move the buffer data pointer to the next line: */

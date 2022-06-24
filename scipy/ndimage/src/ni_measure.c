@@ -130,7 +130,11 @@ int NI_FindObjects(PyArrayObject* input, npy_intp max_label,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_IteratorNext(&ii, &pi);
+        if (!NI_IteratorNext(&ii, &pi)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
  exit:
     NPY_END_THREADS;
@@ -258,7 +262,11 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
         temp[jj].done = 0;
         if (ival > maxval)
             maxval = ival;
-        NI_IteratorNext(&ii, &pi);
+        if (!NI_IteratorNext(&ii, &pi)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
     }
     pi = (void *)PyArray_DATA(input);
     /* Allocate and initialize the storage for the queue. */
@@ -318,7 +326,11 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_IteratorNext2(&mi, &li, &pm, &pl);
+        if (!NI_IteratorNext2(&mi, &li, &pm, &pl)) {
+            NPY_END_THREADS;
+            PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
+            goto exit;
+        }
         if (label != 0) {
             /* This node is a marker */
             temp[jj].cost = 0;
