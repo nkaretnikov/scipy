@@ -186,7 +186,7 @@ int NI_SplineFilter1D(PyArrayObject *input, int order, int axis,
         /* iterate over the lines in the buffer: */
         for(kk = 0; kk < lines; kk++) {
             /* get line: */
-            double *ln = NI_GET_LINE(iline_buffer, kk);
+            double *ln = NI_GetLine(&iline_buffer, kk);
             /* spline filter: */
             if (len > 1) {
                 apply_filter(ln, len, poles, npoles, mode);
@@ -610,9 +610,9 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
             goto exit;
         }
         if (coordinates) {
-            NI_ITERATOR_NEXT2(io, ic, po, pc);
+            NI_IteratorNext2(&io, &ic, &po, &pc);
         } else {
-            NI_ITERATOR_NEXT(io, po);
+            NI_IteratorNext(&io, &po);
         }
     }
 
@@ -992,7 +992,7 @@ int NI_ZoomShift(PyArrayObject *input, PyArrayObject* zoom_ar,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_ITERATOR_NEXT(io, po);
+        NI_IteratorNext(&io, &po);
     }
 
  exit:

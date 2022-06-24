@@ -433,7 +433,7 @@ int NI_FourierFilter(PyArrayObject *input, PyArrayObject* parameter_array,
                 goto exit;
             }
         }
-        NI_ITERATOR_NEXT2(ii, io, pi, po);
+        NI_IteratorNext2(&ii, &io, &pi, &po);
     }
 
  exit:
@@ -586,7 +586,7 @@ int NI_FourierShift(PyArrayObject *input, PyArrayObject* shift_array,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        NI_ITERATOR_NEXT2(ii, io, pi, po);
+        NI_IteratorNext2(&ii, &io, &pi, &po);
     }
 
  exit:
