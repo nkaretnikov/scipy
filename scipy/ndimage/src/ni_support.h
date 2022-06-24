@@ -48,8 +48,8 @@
 #include <assert.h>
 
 /* The different boundary conditions. The mirror condition is not used
-     by the python code, but C code is kept around in case we might wish
-     to add it. */
+   by the python code, but C code is kept around in case we might wish
+   to add it. */
 typedef enum {
     NI_EXTEND_FIRST = 0,
     NI_EXTEND_NEAREST = 0,
@@ -62,7 +62,6 @@ typedef enum {
     NI_EXTEND_LAST = NI_EXTEND_GRID_WRAP,
     NI_EXTEND_DEFAULT = NI_EXTEND_MIRROR
 } NI_ExtendMode;
-
 
 /******************************************************************/
 /* Iterators */
@@ -80,7 +79,7 @@ typedef struct {
 /* initialize iterations over single array elements: */
 int NI_InitPointIterator(PyArrayObject*, NI_Iterator*);
 
-/* initialize iterations over an arbritrary sub-space: */
+/* initialize iterations over an arbitrary sub-space: */
 int NI_SubspaceIterator(NI_Iterator*, npy_uint32);
 
 /* initialize iteration over array lines: */
@@ -198,11 +197,11 @@ static inline double* NI_GetLine(NI_LineBuffer *buf, npy_intp line)
 
 /* Allocate line buffer data */
 int NI_AllocateLineBuffer(PyArrayObject*, int, npy_intp, npy_intp,
-                           npy_intp*, npy_intp, double**);
+                          npy_intp*, npy_intp, double**);
 
 /* Initialize a line buffer */
 int NI_InitLineBuffer(PyArrayObject*, int, npy_intp, npy_intp, npy_intp,
-                                            double*, NI_ExtendMode, double, NI_LineBuffer*);
+                      double*, NI_ExtendMode, double, NI_LineBuffer*);
 
 /* Extend a line in memory to implement boundary conditions: */
 int NI_ExtendLine(double*, npy_intp, npy_intp, npy_intp, NI_ExtendMode, double);
@@ -228,13 +227,13 @@ int NI_InitFilterIterator(int, npy_intp*, npy_intp, npy_intp*,
                           npy_intp*, NI_FilterIterator*);
 
 /* Calculate the offsets to the filter points, for all border regions and
-     the interior of the array: */
+   the interior of the array: */
 int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
                          npy_intp*, NI_ExtendMode, npy_intp**,
                          npy_intp*, npy_intp**);
 
 /* Move to the next point in an array, possible changing the filter
-     offsets, to adapt to boundary conditions: */
+   offsets, to adapt to boundary conditions: */
 static inline void NI_FilterNext(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
@@ -263,8 +262,8 @@ static inline void NI_FilterNext(
 }
 
 /* Move to the next point in two arrays, possible changing the pointer
-     to the filter offsets when moving into a different region in the
-     array: */
+   to the filter offsets when moving into a different region in the
+   array: */
 static inline void NI_FilterNext2(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
@@ -297,8 +296,8 @@ static inline void NI_FilterNext2(
 }
 
 /* Move to the next point in three arrays, possible changing the pointer
-     to the filter offsets when moving into a different region in the
-     array: */
+   to the filter offsets when moving into a different region in the
+   array: */
 static inline void NI_FilterNext3(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
@@ -335,7 +334,7 @@ static inline void NI_FilterNext3(
 }
 
 /* Move the pointer to the filter offsets according to the given
-    coordinates: */
+   coordinates: */
 static inline void NI_FilterGoto(
     NI_FilterIterator *itf,
     NI_Iterator *it,
@@ -364,13 +363,13 @@ static inline void NI_FilterGoto(
 
 typedef struct {
     npy_intp *coordinates;
-        int size;
-        void *next;
+    int size;
+    void *next;
 } NI_CoordinateBlock;
 
 typedef struct {
-        int block_size, rank;
-        void *blocks;
+    int block_size, rank;
+    void *blocks;
 } NI_CoordinateList;
 
 NI_CoordinateList* NI_InitCoordinateList(int, int);
