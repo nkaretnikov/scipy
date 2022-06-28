@@ -103,21 +103,37 @@ err:
 }
 
 /* go to the next point in a single array */
-static inline bool NI_IteratorNext(NI_Iterator *it, void **ptr)
+static inline bool NI_IteratorNext(
+    NI_Iterator *it,
+    void **ptr,
+    void *ptr_base,
+    npy_intp ptr_size)
 {
-    if (NPY_UNLIKELY(!it || !ptr)) {
+    if (NPY_UNLIKELY(!it || !ptr || ptr_size <= 0)) {  /* skip ptr_base */
         goto err;
     }
 
+    bool _break = false;
     for (int ii = it->rank_m1; ii >= 0; ii--) {
         if (it->coordinates[ii] < it->dimensions[ii]) {
             it->coordinates[ii]++;
             *ptr += it->strides[ii];
-            break;
+            _break = true;
 
         } else {
             it->coordinates[ii] = 0;
             *ptr -= it->backstrides[ii];
+        }
+
+        if (NPY_UNLIKELY(
+            *ptr < ptr_base ||
+            *ptr >= ptr_base + ptr_size))
+        {
+            goto err;
+        }
+
+        if (_break) {
+            break;
         }
     }
 
