@@ -358,6 +358,7 @@ int NI_ArrayToLineBuffer(NI_LineBuffer *buffer,
 {
     double *pb = buffer->buffer_data;
     char *pa;
+    char *buffer_array_base = buffer->array_data;
     npy_intp length = buffer->line_length;
 
     pb += buffer->size1;
@@ -401,7 +402,8 @@ int NI_ArrayToLineBuffer(NI_LineBuffer *buffer,
             return 0;
         }
         /* goto next line in the array: */
-        if (!NI_IteratorNext(&buffer->iterator, &buffer->array_data)) {
+        if (!NI_IteratorNext(&buffer->iterator, &buffer->array_data,
+                             buffer_array_base, buffer->array_size)) {
             return 0;  /* invalid pointer */
         }
         /* implement boundary conditions to the line: */
@@ -439,6 +441,7 @@ int NI_LineBufferToArray(NI_LineBuffer *buffer)
 {
     double *pb = buffer->buffer_data;
     char *pa;
+    char *buffer_array_base = buffer->array_data;
     npy_intp jj, length = buffer->line_length;
 
     pb += buffer->size1;
@@ -481,7 +484,8 @@ int NI_LineBufferToArray(NI_LineBuffer *buffer)
             return 0;
         }
         /* move to the next line in the array: */
-        if (!NI_IteratorNext(&buffer->iterator, &buffer->array_data)) {
+        if (!NI_IteratorNext(&buffer->iterator, &buffer->array_data,
+                             buffer_array_base, buffer->array_size)) {
             return 0;  /* invalid pointer */
         }
         /* number of lines copied: */

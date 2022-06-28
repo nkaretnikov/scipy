@@ -630,7 +630,9 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
     int kk;
     NI_BorderElement *border_elements = NULL, *temp;
     NI_Iterator ii, di, fi;
-    char *pi, *pd = NULL, *pf = NULL;
+    char *pd = NULL, *pf = NULL;
+    char *pi = NULL, *pi_base = NULL;
+    npy_intp pi_size = 0;
     npy_double *sampling = sampling_arr ? (void *)PyArray_DATA(sampling_arr) : NULL;
     NPY_BEGIN_THREADS_DEF;
 
@@ -648,7 +650,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
     }
 
     size = PyArray_SIZE(input);
-    pi = (void *)PyArray_DATA(input);
+    pi = pi_base = (void *)PyArray_DATA(input);
+    pi_size = PyArray_NBYTES(input);
 
     if (!NI_InitPointIterator(input, &ii))
         goto exit;
@@ -673,7 +676,7 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                 temp->coordinates[kk] = ii.coordinates[kk];
             }
         }
-        if (!NI_IteratorNext(&ii, &pi)) {
+        if (!NI_IteratorNext(&ii, &pi, pi_base, pi_size)) {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
@@ -1081,7 +1084,7 @@ static void _ComputeFT(char *pi, char *pf, char *pf_base, npy_intp pf_size,
                 coor[kk] = ii.coordinates[kk];
             _VoronoiFT(tf, ishape[d], coor, rank, d, fstrides[d + 1],
                                  fstrides[0], f, g, sampling);
-            if (!NI_IteratorNext(&ii, &tf)) {
+            if (!NI_IteratorNext(&ii, &tf, pf_base, pf_size)) {
                 return;  /* invalid pointer */
             }
         }
