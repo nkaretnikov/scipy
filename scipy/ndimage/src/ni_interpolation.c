@@ -265,9 +265,10 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
                 PyArrayObject *output, int order, int mode, double cval,
                 int nprepad)
 {
-    char *pi, *pc = NULL;
+    char *pi;
+    char *pc = NULL, *pc_base = NULL;
     char *po = NULL, *po_base = NULL;
-    npy_intp po_size = 0;
+    npy_intp pc_size = 0, po_size = 0;
     npy_intp **edge_offsets = NULL, **data_offsets = NULL, filter_size;
     char **edge_grid_const = NULL;
     npy_intp ftmp[NPY_MAXDIMS], *fcoordinates = NULL, *foffsets = NULL;
@@ -298,7 +299,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
         cstride = ic.strides[0];
         if (!NI_LineIterator(&ic, 0))
             goto exit;
-        pc = (void *)(PyArray_DATA(coordinates));
+        pc = pc_base = (void *)(PyArray_DATA(coordinates));
+        pc_size = PyArray_NBYTES(coordinates);
     }
 
     /* offsets used at the borders: */
@@ -619,7 +621,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
             goto exit;
         }
         if (coordinates) {
-            if (!NI_IteratorNext2(&io, &ic, &po, &pc)) {
+            if (!NI_IteratorNext2(&io, &ic, &po, po_base, po_size, &pc, pc_base,
+                                  pc_size)) {
                 NPY_END_THREADS;
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                 goto exit;
