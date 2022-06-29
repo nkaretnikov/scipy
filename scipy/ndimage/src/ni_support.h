@@ -191,30 +191,49 @@ err:
 
 /* go to the next point in three arrays of the same size */
 static inline bool NI_IteratorNext3(
-    NI_Iterator *it1,
-    NI_Iterator *it2,
-    NI_Iterator *it3,
-    void **ptr1,
-    void **ptr2,
-    void **ptr3)
+    NI_Iterator *it1, NI_Iterator *it2, NI_Iterator *it3,
+    void **ptr1, void *ptr1_base, npy_intp ptr1_size,
+    void **ptr2, void *ptr2_base, npy_intp ptr2_size,
+    void **ptr3, void *ptr3_base, npy_intp ptr3_size)
 {
-    if (NPY_UNLIKELY(!it1 || !it2 || !it3 || !ptr1 || !ptr2 || !ptr3)) {
+    if (NPY_UNLIKELY(
+        !it1 || !it2 || !it3 ||
+        !ptr1 || ptr1_size <= 0 ||  /* skip ptr1_base */
+        !ptr2 || ptr2_size <= 0 ||  /* skip ptr2_base */
+        !ptr3 || ptr3_size <= 0))   /* skip ptr3_base */
+    {
         goto err;
     }
 
+    bool _break = false;
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         if (it1->coordinates[ii] < it1->dimensions[ii]) {
             it1->coordinates[ii]++;
             *ptr1 += it1->strides[ii];
             *ptr2 += it2->strides[ii];
             *ptr3 += it3->strides[ii];
-            break;
+            _break = true;
 
         } else {
             it1->coordinates[ii] = 0;
             *ptr1 -= it1->backstrides[ii];
             *ptr2 -= it2->backstrides[ii];
             *ptr3 -= it3->backstrides[ii];
+        }
+
+        if (NPY_UNLIKELY(
+            *ptr1 < ptr1_base ||
+            *ptr1 >= ptr1_base + ptr1_size ||
+            *ptr2 < ptr2_base ||
+            *ptr2 >= ptr2_base + ptr2_size ||
+            *ptr3 < ptr3_base ||
+            *ptr3 >= ptr3_base + ptr3_size))
+        {
+            goto err;
+        }
+
+        if (_break) {
+            break;
         }
     }
 
