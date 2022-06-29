@@ -738,7 +738,9 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                if (!NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf)) {
+                if (!NI_IteratorNext3(&ii, &di, &fi, &pi, pi_base, pi_size, &pd,
+                                      pd_base, pd_size, &pf, pf_base, pf_size))
+                {
                     NPY_END_THREADS;
                     PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                     goto exit;
@@ -798,7 +800,9 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
                     *(npy_int32*)pf = jj;
             }
             if (features && distances) {
-                if (!NI_IteratorNext3(&ii, &di, &fi, &pi, &pd, &pf)) {
+                if (!NI_IteratorNext3(&ii, &di, &fi, &pi, pi_base, pi_size, &pd,
+                                      pd_base, pd_size, &pf, pf_base, pf_size))
+                {
                     NPY_END_THREADS;
                     PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                     goto exit;
