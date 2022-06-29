@@ -246,18 +246,30 @@ err:
 static inline bool NI_IteratorGoto(
     NI_Iterator *it,
     npy_intp *dest,
-    void *base,
-    void **ptr)
+    void **ptr,
+    void *ptr_base,
+    npy_intp ptr_size)
 {
-    if (NPY_UNLIKELY(!it || !dest || !ptr)) {  /* skip base */
+    if (NPY_UNLIKELY(
+        !it || !dest ||
+        !ptr || ptr_size <= 0))  /* skip ptr_base */
+    {
         goto err;
     }
 
-    *ptr = base;
+    *ptr = ptr_base;
 
+    /* XXX: check dest size before access */
     for (int ii = it->rank_m1; ii >= 0; ii--) {
         *ptr += dest[ii] * it->strides[ii];
         it->coordinates[ii] = dest[ii];
+
+        if (NPY_UNLIKELY(
+            *ptr < ptr_base ||
+            *ptr >= ptr_base + ptr_size))
+        {
+            goto err;
+        }
     }
 
     return true;

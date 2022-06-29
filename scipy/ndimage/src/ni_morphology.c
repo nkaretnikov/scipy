@@ -438,7 +438,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
         }
-        pi = (void *)PyArray_DATA(array);
+        pi = pi_base = (void *)PyArray_DATA(array);
+        pi_size = PyArray_NBYTES(array);
     }
 
     list1 = NI_InitCoordinateList((*iclist)->block_size, (*iclist)->rank);
@@ -472,7 +473,7 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
                 break;
             }
         }
-        if (!NI_IteratorGoto(&ii, current_coordinates1, pi_base, &pi)) {
+        if (!NI_IteratorGoto(&ii, current_coordinates1, &pi, pi_base, pi_size)) {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
