@@ -217,9 +217,10 @@ typedef struct {
 int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
                                         PyArrayObject* strct, PyArrayObject* output)
 {
-    char *pl, *pm;
+    char *pl = NULL, *pl_base = NULL;
+    char *pm = NULL, *pm_base = NULL;
     char *pi = NULL, *pi_base = NULL;
-    npy_intp pi_size = 0;
+    npy_intp pl_size = 0, pm_size = 0, pi_size = 0;
     int ll;
     npy_intp size, jj, hh, kk, maxval;
     npy_intp strides[WS_MAXDIM], coordinates[WS_MAXDIM];
@@ -290,8 +291,10 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
         goto exit;
     if (!NI_InitPointIterator(output, &li))
         goto exit;
-    pm = (void *)PyArray_DATA(markers);
-    pl = (void *)PyArray_DATA(output);
+    pm = pm_base = (void *)PyArray_DATA(markers);
+    pm_size = PyArray_NBYTES(markers);
+    pl = pl_base = (void *)PyArray_DATA(output);
+    pl_size = PyArray_NBYTES(output);
     /* initialize all nodes */
     for (ll = 0; ll < PyArray_NDIM(input); ll++) {
         coordinates[ll] = 0;
@@ -331,7 +334,8 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
             goto exit;
         }
-        if (!NI_IteratorNext2(&mi, &li, &pm, &pl)) {
+        if (!NI_IteratorNext2(&mi, &li, &pm, pm_base, pm_size, &pl, pl_base,
+                              pl_size)) {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
