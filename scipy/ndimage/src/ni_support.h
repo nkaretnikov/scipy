@@ -83,7 +83,7 @@ static inline void* NI_GetDataBasePtr(PyArrayObject *arr)
 
     int dims = PyArray_NDIM(arr);
     if (dims <= 0) {
-        return NULL;
+        return ptr;
     }
 
     npy_intp stride0 = PyArray_STRIDE(arr, 0);
