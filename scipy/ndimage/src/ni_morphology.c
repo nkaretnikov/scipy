@@ -1019,7 +1019,6 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
                                pf_size))
             {
                 NPY_END_THREADS;
-                printf("HERE\n");
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                 goto exit;
             }
@@ -1028,7 +1027,6 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
                            pd_size))
         {
             NPY_END_THREADS;
-            printf("THERE\n");
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
         }
