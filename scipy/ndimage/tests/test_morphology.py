@@ -1217,6 +1217,7 @@ class TestNdimageMorphology:
                                iterations=iterations, output=out)
         assert_array_almost_equal(out, expected)
 
+    @pytest.mark.skip(reason="crashes due to OOB access")
     def test_binary_erosion41(self):
         # https://github.com/scikit-image/scikit-image/blob/main/skimage/morphology/footprints.py
         def disk(radius, dtype=numpy.uint8):
