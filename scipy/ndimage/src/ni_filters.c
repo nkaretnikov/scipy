@@ -181,10 +181,14 @@ int NI_Correlate(PyArrayObject* input, PyArrayObject* weights,
 {
     npy_bool *pf = NULL;
     npy_intp fsize, jj, kk, filter_size = 0, border_flag_value;
-    npy_intp *offsets = NULL, *oo, size;
+    npy_intp *offsets = NULL;
+    npy_intp *oo = NULL, *oo_base = NULL;
+    char *pi = NULL, *pi_base = NULL;
+    char *po = NULL, *po_base = NULL;
+    npy_intp oo_size = 0, pi_size = 0, po_size = 0;
+    npy_intp size;
     NI_FilterIterator fi;
     NI_Iterator ii, io;
-    char *pi, *po;
     npy_double *pw;
     npy_double *ww = NULL;
     int err = 0;
@@ -243,10 +247,15 @@ int NI_Correlate(PyArrayObject* input, PyArrayObject* weights,
     NPY_BEGIN_THREADS;
     /* get data pointers an array size: */
     pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */
-    oo = offsets;
+    oo = oo_base = offsets;
+    oo_size = offsets_size;
     for(jj = 0; jj < size; jj++) {
         double tmp = 0.0;
         switch (PyArray_TYPE(input)) {
@@ -311,7 +320,8 @@ int NI_Correlate(PyArrayObject* input, PyArrayObject* weights,
                 err = 1;
                 goto exit;
         }
-        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, oo_base, oo_size, &pi, pi_base,
+                            pi_size, &po, po_base, po_size)) {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
@@ -584,10 +594,14 @@ int NI_MinOrMaxFilter(PyArrayObject* input, PyArrayObject* footprint,
 {
     npy_bool *pf = NULL;
     npy_intp fsize, jj, kk, filter_size = 0, border_flag_value;
-    npy_intp *offsets = NULL, *oo, size;
+    npy_intp *offsets = NULL;
+    npy_intp *oo = NULL, *oo_base = NULL;
+    char *pi = NULL, *pi_base = NULL;
+    char *po = NULL, *po_base = NULL;
+    npy_intp oo_size = 0, pi_size = 0, po_size = 0;
+    npy_intp size;
     NI_FilterIterator fi;
     NI_Iterator ii, io;
-    char *pi, *po;
     int err = 0;
     double *ss = NULL;
     npy_double *ps;
@@ -641,10 +655,15 @@ int NI_MinOrMaxFilter(PyArrayObject* input, PyArrayObject* footprint,
 
     /* get data pointers an array size: */
     pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */
-    oo = offsets;
+    oo = oo_base = offsets;
+    oo_size = offsets_size;
     for(jj = 0; jj < size; jj++) {
         double tmp = 0.0;
         switch (PyArray_TYPE(input)) {
@@ -709,7 +728,8 @@ int NI_MinOrMaxFilter(PyArrayObject* input, PyArrayObject* footprint,
                 err = 1;
                 goto exit;
         }
-        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, oo_base, oo_size, &pi, pi_base,
+                            pi_size, &po, po_base, po_size)) {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
@@ -785,10 +805,14 @@ int NI_RankFilter(PyArrayObject* input, int rank,
                   NI_ExtendMode mode, double cvalue, npy_intp *origins)
 {
     npy_intp fsize, jj, filter_size = 0, border_flag_value;
-    npy_intp *offsets = NULL, *oo, size;
+    npy_intp *offsets = NULL;
+    npy_intp *oo = NULL, *oo_base = NULL;
+    char *pi = NULL, *pi_base = NULL;
+    char *po = NULL, *po_base = NULL;
+    npy_intp oo_size = 0, pi_size = 0, po_size = 0;
+    npy_intp size;
     NI_FilterIterator fi;
     NI_Iterator ii, io;
-    char *pi, *po;
     npy_bool *pf = NULL;
     double *buffer = NULL;
     int err = 0;
@@ -835,10 +859,15 @@ int NI_RankFilter(PyArrayObject* input, int rank,
     NPY_BEGIN_THREADS;
     /* get data pointers an array size: */
     pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */
-    oo = offsets;
+    oo = oo_base = offsets;
+    oo_size = offsets_size;
     for(jj = 0; jj < size; jj++) {
         double tmp = 0.0;
         switch (PyArray_TYPE(input)) {
@@ -903,7 +932,8 @@ int NI_RankFilter(PyArrayObject* input, int rank,
                 err = 1;
                 goto exit;
         }
-        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, oo_base, oo_size, &pi, pi_base,
+                            pi_size, &po, po_base, po_size)) {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
@@ -1019,10 +1049,14 @@ int NI_GenericFilter(PyArrayObject* input,
 {
     npy_bool *pf = NULL;
     npy_intp fsize, jj, filter_size = 0, border_flag_value;
-    npy_intp *offsets = NULL, *oo, size;
+    npy_intp *offsets = NULL;
+    npy_intp *oo = NULL, *oo_base = NULL;
+    char *pi = NULL, *pi_base = NULL;
+    char *po = NULL, *po_base = NULL;
+    npy_intp oo_size = 0, pi_size = 0, po_size = 0;
+    npy_intp size;
     NI_FilterIterator fi;
     NI_Iterator ii, io;
-    char *pi, *po;
     double *buffer = NULL;
 
     /* get the footprint: */
@@ -1055,7 +1089,11 @@ int NI_GenericFilter(PyArrayObject* input,
         goto exit;
     /* get data pointers an array size: */
     pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* buffer for filter calculation: */
     buffer = malloc(filter_size * sizeof(double));
@@ -1064,7 +1102,8 @@ int NI_GenericFilter(PyArrayObject* input,
         goto exit;
     }
     /* iterate over the elements: */
-    oo = offsets;
+    oo = oo_base = offsets;
+    oo_size = offsets_size;
     for(jj = 0; jj < size; jj++) {
         double tmp = 0.0;
         switch (PyArray_TYPE(input)) {
@@ -1131,7 +1170,8 @@ int NI_GenericFilter(PyArrayObject* input,
                                 "array type not supported");
                 goto exit;
         }
-        if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+        if (!NI_FilterNext2(&fi, &ii, &io, &oo, oo_base, oo_size, &pi, pi_base,
+                            pi_size, &po, po_base, po_size)) {
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
         }
