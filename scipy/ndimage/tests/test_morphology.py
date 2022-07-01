@@ -1217,7 +1217,6 @@ class TestNdimageMorphology:
                                iterations=iterations, output=out)
         assert_array_almost_equal(out, expected)
 
-    @pytest.mark.skip(reason="crashes due to OOB access")
     def test_binary_erosion41(self):
         # https://github.com/scikit-image/scikit-image/blob/main/skimage/morphology/footprints.py
         def disk(radius, dtype=numpy.uint8):
@@ -1229,7 +1228,8 @@ class TestNdimageMorphology:
         rstate = numpy.random.RandomState(123)
         inds = numpy.array(rstate.rand(45, 25) > 0.2)
         struct = disk(32, dtype=bool)
-        ndimage.binary_dilation(inds, struct, iterations=2)
+        with assert_raises(RuntimeError, match="invalid pointer"):
+            ndimage.binary_dilation(inds, struct, iterations=2)
 
     @pytest.mark.parametrize('dtype', types)
     def test_binary_dilation01(self, dtype):
