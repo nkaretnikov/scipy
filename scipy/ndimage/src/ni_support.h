@@ -68,6 +68,40 @@ typedef enum {
 /* Iterators */
 /******************************************************************/
 
+/* Get a pointer to the start of the data buffer returned by PyArray_DATA.  For
+   arrays with positive strides, PyArray_DATA returns a pointer to the first
+   element.  For arrays with negative strides (reversed with [::-1]),
+   PyArray_DATA returns a pointer *to* the last element.  Return NULL if the
+   pointer cannot be computed.
+*/
+static inline void* NI_GetDataBasePtr(PyArrayObject *arr)
+{
+    void *ptr = (void *)PyArray_DATA(arr);
+    if (!ptr) {
+        return NULL;
+    }
+
+    int dims = PyArray_NDIM(arr);
+    if (dims <= 0) {
+        return NULL;
+    }
+
+    npy_intp stride0 = PyArray_STRIDE(arr, 0);
+    npy_intp dim0 = PyArray_DIM(arr, 0);
+    npy_intp item_size = PyArray_ITEMSIZE(arr);
+
+    npy_intp offset = stride0 * dim0 + item_size;
+    void *base_ptr = ptr + offset;
+
+    if (base_ptr < ptr) {
+        /* negative strides case */
+        return base_ptr;
+    } else {
+        /* positive strides case */
+        return ptr;
+    }
+}
+
 /* the iterator structure: */
 typedef struct {
     int rank_m1;
