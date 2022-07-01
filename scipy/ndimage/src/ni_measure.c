@@ -293,9 +293,11 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
         goto exit;
     if (!NI_InitPointIterator(output, &li))
         goto exit;
-    pm = pm_base = (void *)PyArray_DATA(markers);
+    pm = (void *)PyArray_DATA(markers);
+    pm_base = NI_GetDataBasePtr(markers);
     pm_size = PyArray_NBYTES(markers);
-    pl = pl_base = (void *)PyArray_DATA(output);
+    pl = (void *)PyArray_DATA(output);
+    pl_base = NI_GetDataBasePtr(output);
     pl_size = PyArray_NBYTES(output);
     /* initialize all nodes */
     for (ll = 0; ll < PyArray_NDIM(input); ll++) {
