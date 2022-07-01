@@ -371,7 +371,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
 
     /* get data pointers: */
     pi = (void *)PyArray_DATA(input);
-    po = po_base = (void *)PyArray_DATA(output);
+    po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
     po_size = PyArray_NBYTES(output);
 
     /* make a table of all possible coordinates within the spline filter: */
@@ -870,7 +871,8 @@ int NI_ZoomShift(PyArrayObject *input, PyArrayObject* zoom_ar,
         goto exit;
 
     pi = (void *)PyArray_DATA(input);
-    po = po_base = (void *)PyArray_DATA(output);
+    po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
     po_size = PyArray_NBYTES(output);
 
     /* store all coordinates and offsets with filter: */
