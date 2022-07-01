@@ -664,7 +664,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
     }
 
     size = PyArray_SIZE(input);
-    pi = pi_base = (void *)PyArray_DATA(input);
+    pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
     pi_size = PyArray_NBYTES(input);
 
     if (!NI_InitPointIterator(input, &ii))

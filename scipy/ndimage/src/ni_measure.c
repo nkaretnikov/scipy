@@ -85,7 +85,8 @@ int NI_FindObjects(PyArrayObject* input, npy_intp max_label,
     NPY_BEGIN_THREADS;
 
     /* get input data, size and iterator: */
-    pi = pi_base = (void *)PyArray_DATA(input);
+    pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
     pi_size = PyArray_NBYTES(input);
     size = PyArray_SIZE(input);
     if (!NI_InitPointIterator(input, &ii))
@@ -248,7 +249,8 @@ int NI_WatershedIFT(PyArrayObject* input, PyArrayObject* markers,
 
     NPY_BEGIN_THREADS;
 
-    pi = pi_base = (void *)PyArray_DATA(input);
+    pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
     pi_size = PyArray_NBYTES(input);
     if (!NI_InitPointIterator(input, &ii))
         goto exit;
