@@ -389,13 +389,18 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
 static inline bool NI_FilterNext(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
-    void ***ptrf,
-    void **ptr1)
+    void ***ptrf, void **ptrf_base, npy_intp ptrf_size,
+    void **ptr1, void *ptr1_base, npy_intp ptr1_size)
 {
-    if (NPY_UNLIKELY(!itf || !it1 || !ptrf || !ptr1)) {
+    if (NPY_UNLIKELY(
+        !itf || !it1 ||
+        !ptrf || ptrf_size <= 0 ||  /* skip ptrf_base */
+        !ptr1 || ptr1_base <= 0))   /* skip ptr1_base */
+    {
         goto err;
     }
 
+    bool _break = false;
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         npy_intp pp = it1->coordinates[ii];
 
@@ -407,12 +412,25 @@ static inline bool NI_FilterNext(
             }
             it1->coordinates[ii]++;
             *ptr1 += it1->strides[ii];
-            break;
+            _break = true;
 
         } else {
             it1->coordinates[ii] = 0;
             *ptr1 -= it1->backstrides[ii];
             *ptrf -= itf->backstrides[ii];
+        }
+
+        if (NPY_UNLIKELY(
+            *ptrf < ptrf_base ||
+            *ptrf >= ptrf_base + ptrf_size ||
+            *ptr1 < ptr1_base ||
+            *ptr1 >= ptr1_base + ptr1_size))
+        {
+            goto err;
+        }
+
+        if (_break) {
+            break;
         }
     }
 
