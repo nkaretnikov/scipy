@@ -440,7 +440,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
         }
-        pi = pi_base = (void *)PyArray_DATA(array);
+        pi = (void *)PyArray_DATA(array);
+        pi_base = NI_GetDataBasePtr(array);
         pi_size = PyArray_NBYTES(array);
     }
 
