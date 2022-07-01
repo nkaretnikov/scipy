@@ -336,9 +336,11 @@ int NI_FourierFilter(PyArrayObject *input, PyArrayObject* parameter_array,
     /* initialize output element iterator: */
     if (!NI_InitPointIterator(output, &io))
         goto exit;
-    pi = pi_base = (void *)PyArray_DATA(input);
+    pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
     pi_size = PyArray_NBYTES(input);
-    po = po_base = (void *)PyArray_DATA(output);
+    po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
     po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */
@@ -541,9 +543,11 @@ int NI_FourierShift(PyArrayObject *input, PyArrayObject* shift_array,
     /* initialize output element iterator: */
     if (!NI_InitPointIterator(output, &io))
         goto exit;
-    pi = pi_base = (void *)PyArray_DATA(input);
+    pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
     pi_size = PyArray_NBYTES(input);
-    po = po_base = (void *)PyArray_DATA(output);
+    po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
     po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     /* iterator over the elements: */

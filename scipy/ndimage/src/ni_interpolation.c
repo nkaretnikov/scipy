@@ -299,7 +299,8 @@ NI_GeometricTransform(PyArrayObject *input, int (*map)(npy_intp*, double*,
         cstride = ic.strides[0];
         if (!NI_LineIterator(&ic, 0))
             goto exit;
-        pc = pc_base = (void *)(PyArray_DATA(coordinates));
+        pc = (void *)(PyArray_DATA(coordinates));
+        pc_base = NI_GetDataBasePtr(coordinates);
         pc_size = PyArray_NBYTES(coordinates);
     }
 

@@ -399,7 +399,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
     }
 
     /* get data pointers and size: */
-    pi = pi_base = (void *)PyArray_DATA(array);
+    pi = (void *)PyArray_DATA(array);
+    pi_base = NI_GetDataBasePtr(array);
     pi_size = PyArray_NBYTES(array);
 
     if (invert) {
@@ -414,7 +415,8 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
         /* iterator, data pointer and type of mask array: */
         if (!NI_InitPointIterator(mask, &mi))
             return 0;
-        pm = pm_base = (void *)PyArray_DATA(mask);
+        pm = (void *)PyArray_DATA(mask);
+        pm_base = NI_GetDataBasePtr(mask);
         pm_size = PyArray_NBYTES(mask);
 
         size = PyArray_SIZE(array);
@@ -593,9 +595,11 @@ int NI_BinaryErosion2(PyArrayObject* array, PyArrayObject* strct,
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
         }
-        pi = pi_base = (void *)PyArray_DATA(array);
+        pi = (void *)PyArray_DATA(array);
+        pi_base = NI_GetDataBasePtr(array);
         pi_size = PyArray_NBYTES(array);
-        pm = pm_base = (void *)PyArray_DATA(mask);
+        pm = (void *)PyArray_DATA(mask);
+        pm_base = NI_GetDataBasePtr(mask);
         pm_size = PyArray_NBYTES(mask);
         for(jj = 0; jj < size; jj++) {
             int value = *(npy_int8*)pm;
@@ -648,7 +652,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
 
     /* check the output arrays: */
     if (distances) {
-        pd = pd_base = (void *)PyArray_DATA(distances);
+        pd = (void *)PyArray_DATA(distances);
+        pd_base = NI_GetDataBasePtr(distances);
         pd_size = PyArray_NBYTES(distances);
 
         if (!NI_InitPointIterator(distances, &di))
@@ -656,7 +661,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
     }
 
     if (features) {
-        pf = pf_base = (void *)PyArray_DATA(features);
+        pf = (void *)PyArray_DATA(features);
+        pf_base = NI_GetDataBasePtr(features);
         pf_size = PyArray_NBYTES(features);
 
         if (!NI_InitPointIterator(features, &fi))
@@ -705,7 +711,8 @@ int NI_DistanceTransformBruteForce(PyArrayObject* input, int metric,
         PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
         goto exit;
     }
-    pi = pi_base = (void *)PyArray_DATA(input);
+    pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
     pi_size = PyArray_NBYTES(input);
 
     switch(metric) {
