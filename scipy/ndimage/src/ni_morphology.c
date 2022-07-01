@@ -49,9 +49,9 @@ case _TYPE:                                  \
     break
 
 #define CASE_NI_ERODE_POINT(_TYPE, _type, _pi, _out, _offsets,        \
-                           _offsets_size, _filter_size, _mv,          \
-                           _border_value, _bv, _center_is_true,       \
-                           _true, _false, _changed)                   \
+                            _offsets_size, _filter_size, _mv,         \
+                            _border_value, _bv, _center_is_true,      \
+                            _true, _false, _changed)                  \
 case _TYPE:                                                           \
 {                                                                     \
     npy_intp _ii, _oo;                                                \
