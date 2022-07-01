@@ -446,14 +446,20 @@ static inline bool NI_FilterNext2(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
     NI_Iterator *it2,
-    void ***ptrf,
-    void **ptr1,
-    void **ptr2)
+    void ***ptrf, void **ptrf_base, npy_intp ptrf_size,
+    void **ptr1, void *ptr1_base, npy_intp ptr1_size,
+    void **ptr2, void *ptr2_base, npy_intp ptr2_size)
 {
-    if (NPY_UNLIKELY(!itf || !it1 || !it2 || !ptrf || !ptr1 || !ptr2)) {
+    if (NPY_UNLIKELY(
+        !itf || !it1 || !it2 ||
+        !ptrf || ptrf_size <= 0 ||  /* skip ptrf_base */
+        !ptr1 || ptr1_size <= 0 ||  /* skip ptr1_base */
+        !ptr2 || ptr2_size <= 0))   /* skip ptr2_base */
+    {
         goto err;
     }
 
+    bool _break = false;
     for (int ii = it1->rank_m1; ii >= 0; ii--) {
         npy_intp pp = it1->coordinates[ii];
 
@@ -466,13 +472,28 @@ static inline bool NI_FilterNext2(
             it1->coordinates[ii]++;
             *ptr1 += it1->strides[ii];
             *ptr2 += it2->strides[ii];
-            break;
+            _break = true;
 
         } else {
             it1->coordinates[ii] = 0;
             *ptr1 -= it1->backstrides[ii];
             *ptr2 -= it2->backstrides[ii];
             *ptrf -= itf->backstrides[ii];
+        }
+
+        if (NPY_UNLIKELY(
+            *ptrf < ptrf_base ||
+            *ptrf >= ptrf_base + ptrf_size ||
+            *ptr1 < ptr1_base ||
+            *ptr1 >= ptr1_base + ptr1_size ||
+            *ptr2 < ptr2_base ||
+            *ptr2 >= ptr2_base + ptr2_size))
+        {
+            goto err;
+        }
+
+        if (_break) {
+            break;
         }
     }
 

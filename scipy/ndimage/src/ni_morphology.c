@@ -92,13 +92,17 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
                      npy_intp *origins, int invert, int center_is_true,
                      int* changed, NI_CoordinateList **coordinate_list)
 {
-    npy_intp struct_size = 0, *offsets = NULL, size, *oo, jj;
+    npy_intp struct_size = 0, *offsets = NULL, size, jj;
     npy_intp ssize, block_size = 0, *current = NULL, border_flag_value;
     int kk, _true, _false, msk_value;
     NI_Iterator ii, io, mi;
     NI_FilterIterator fi;
     npy_bool *ps, out = 0;
-    char *pi, *po, *pm = NULL;
+    npy_intp *oo = NULL, *oo_base = NULL;
+    char *pi = NULL, *pi_base = NULL;
+    char *po = NULL, *po_base = NULL;
+    char *pm = NULL;
+    npy_intp oo_size = 0, pi_size = 0, po_size = 0;
     NI_CoordinateBlock *block = NULL;
     NPY_BEGIN_THREADS_DEF;
 
@@ -137,7 +141,11 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
 
     /* get data pointers an size: */
     pi = (void *)PyArray_DATA(input);
+    pi_base = NI_GetDataBasePtr(input);
+    pi_size = PyArray_NBYTES(input);
     po = (void *)PyArray_DATA(output);
+    po_base = NI_GetDataBasePtr(output);
+    po_size = PyArray_NBYTES(output);
     size = PyArray_SIZE(input);
     if (invert) {
         bdr_value = bdr_value ? 0 : 1;
@@ -164,7 +172,8 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
     }
 
     /* iterator over the elements: */
-    oo = offsets;
+    oo = oo_base = offsets;
+    oo_size = offsets_size;
     *changed = 0;
     msk_value = 1;
     for(jj = 0; jj < size; jj++) {
@@ -292,7 +301,8 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
                 goto exit;
             }
         } else {
-            if (!NI_FilterNext2(&fi, &ii, &io, &oo, &pi, &po)) {
+            if (!NI_FilterNext2(&fi, &ii, &io, &oo, oo_base, oo_size, &pi,
+                                pi_base, pi_size, &po, po_base, po_size)) {
                 NPY_END_THREADS;
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                 goto exit;
