@@ -583,14 +583,24 @@ int NI_InitFilterOffsets(PyArrayObject *array, npy_bool *footprint,
         offsets_size *= (ashape[ii] < fshape[ii] ? ashape[ii] : fshape[ii]);
     /* allocate offsets data: */
     *offsets_bytes = offsets_size * footprint_size * sizeof(npy_intp);
+    if (*offsets_bytes == 0) {
+        PyErr_SetString(PyExc_RuntimeError, "*offsets_bytes is 0");
+        goto exit;
+    }
     *offsets = malloc(*offsets_bytes);
     if (!*offsets) {
         PyErr_NoMemory();
         goto exit;
     }
+
     if (coordinate_offsets) {
         *coordinate_offsets_bytes = offsets_size * rank
                                     * footprint_size * sizeof(npy_intp);
+        if (*coordinate_offsets_bytes == 0) {
+            PyErr_SetString(
+                PyExc_RuntimeError, "*coordinate_offsets_bytes is 0");
+            goto exit;
+        }
         *coordinate_offsets = malloc(*coordinate_offsets_bytes);
         if (!*coordinate_offsets) {
             PyErr_NoMemory();
