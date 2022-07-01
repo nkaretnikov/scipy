@@ -599,6 +599,11 @@ static inline bool NI_FilterGoto(
         }
 
         *ptrf += itf->strides[ii] * jj;
+
+        /* XXX: There doesn't seem to be a good way to check the value of ptrf
+           here, as in the other functions in this file, without relying on the
+           above iterators.
+        */
     }
 
     return true;
