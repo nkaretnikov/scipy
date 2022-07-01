@@ -101,8 +101,8 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
     npy_intp *oo = NULL, *oo_base = NULL;
     char *pi = NULL, *pi_base = NULL;
     char *po = NULL, *po_base = NULL;
-    char *pm = NULL;
-    npy_intp oo_size = 0, pi_size = 0, po_size = 0;
+    char *pm = NULL, *pm_base = NULL;
+    npy_intp oo_size = 0, pi_size = 0, po_size = 0, pm_size = 0;
     NI_CoordinateBlock *block = NULL;
     NPY_BEGIN_THREADS_DEF;
 
@@ -114,6 +114,8 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
         if (!NI_InitPointIterator(mask, &mi))
             return 0;
         pm = (void *)PyArray_DATA(mask);
+        pm_base = NI_GetDataBasePtr(mask);
+        pm_size = PyArray_NBYTES(mask);
     }
     /* calculate the filter offsets: */
     npy_intp offsets_size = 0;
@@ -295,7 +297,10 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
             }
         }
         if (mask) {
-            if (!NI_FilterNext3(&fi, &ii, &io, &mi, &oo, &pi, &po, &pm)) {
+            if (!NI_FilterNext3(&fi, &ii, &io, &mi, &oo, oo_base, oo_size, &pi,
+                                pi_base, pi_size, &po, po_base, po_size, &pm,
+                                pm_base, pm_size))
+            {
                 NPY_END_THREADS;
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                 goto exit;
