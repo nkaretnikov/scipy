@@ -1153,7 +1153,8 @@ int NI_EuclideanFeatureTransform(PyArrayObject* input,
     NPY_BEGIN_THREADS_DEF;
 
     pi = (void *)PyArray_DATA(input);
-    pf = pf_base = (void *)PyArray_DATA(features);
+    pf = (void *)PyArray_DATA(features);
+    pf_base = NI_GetDataBasePtr(features);
     pf_size = PyArray_NBYTES(features);
     for (ii = 0; ii < PyArray_NDIM(input); ii++) {
         coor[ii] = 0;
