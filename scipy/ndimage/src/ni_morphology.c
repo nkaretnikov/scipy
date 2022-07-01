@@ -847,10 +847,14 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
                                 PyArrayObject* distances,
                                 PyArrayObject *features)
 {
-    npy_intp jj, ii, ssize, size, filter_size, mask_value, *oo;
-    npy_intp *foffsets = NULL, *foo = NULL, *offsets = NULL;
-    npy_bool *ps, *pf = NULL, *footprint = NULL;
-    char *pd;
+    npy_intp jj, ii, ssize, size, filter_size, mask_value;
+    npy_intp *foffsets = NULL, *offsets = NULL;
+    npy_bool *ps, *footprint = NULL;
+    npy_intp *oo = NULL, *oo_base = NULL;
+    npy_intp *foo = NULL, *foo_base = NULL;
+    npy_bool *pf = NULL, *pf_base = NULL;
+    char *pd = NULL, *pd_base = NULL;
+    npy_intp oo_size = 0, foo_size = 0, pf_size = 0, pd_size = 0;
     NI_FilterIterator si, ti;
     NI_Iterator di, fi;
     NPY_BEGIN_THREADS_DEF;
@@ -875,6 +879,8 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
         footprint[jj] = 0;
     /* get data and size */
     pd = (void *)PyArray_DATA(distances);
+    pd_base = NI_GetDataBasePtr(distances);
+    pd_size = PyArray_NBYTES(distances);
     size = PyArray_SIZE(distances);
     if (!NI_InitPointIterator(distances, &di))
         goto exit;
@@ -893,15 +899,18 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
         goto exit;
     }
 
+    npy_intp foffsets_size = 0;
+    npy_intp _coordinate_foffsets_size = 0;
     if (features) {
         npy_intp dummy;
         /* initialize point iterator: */
         pf = (void *)PyArray_DATA(features);
+        pf_base = NI_GetDataBasePtr(features);
+        pf_size = PyArray_NBYTES(features);
+
         if (!NI_InitPointIterator(features, &fi))
             goto exit;
         /* calculate the filter offsets: */
-        npy_intp foffsets_size = 0;
-        npy_intp _coordinate_foffsets_size = 0;
         if (!NI_InitFilterOffsets(features, footprint, PyArray_DIMS(strct),
                                   NULL, NI_EXTEND_CONSTANT, &foffsets,
                                   &foffsets_size, &dummy, NULL,
@@ -918,9 +927,12 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
 
     NPY_BEGIN_THREADS;
     /* iterator over the elements: */
-    oo = offsets;
-    if (features)
-        foo = foffsets;
+    oo = oo_base = offsets;
+    oo_size = offsets_size;
+    if (features) {
+        foo = foo_base = foffsets;
+        foo_size = foffsets_size;
+    }
     for(jj = 0; jj < size; jj++) {
         npy_int32 value = *(npy_int32*)pd;
         if (value != 0) {
@@ -945,13 +957,17 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
                 *(npy_int32*)pf = *(npy_int32*)(pf + min_offset);
         }
         if (features) {
-            if (!NI_FilterNext(&ti, &fi, &foo, &pf)) {
+            if (!NI_FilterNext(&ti, &fi, &foo, foo_base, foo_size, &pf, pf_base,
+                               pf_size))
+            {
                 NPY_END_THREADS;
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
                 goto exit;
             }
         }
-        if (!NI_FilterNext(&si, &di, &oo, &pd)) {
+        if (!NI_FilterNext(&si, &di, &oo, oo_base, oo_size, &pd, pd_base,
+                           pd_size))
+        {
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "invalid pointer");
             goto exit;
