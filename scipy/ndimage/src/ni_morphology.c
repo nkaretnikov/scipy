@@ -965,7 +965,7 @@ int NI_DistanceTransformOnePass(PyArrayObject *strct,
     npy_bool *ps, *footprint = NULL;
     npy_intp *oo = NULL, *oo_base = NULL;
     npy_intp *foo = NULL, *foo_base = NULL;
-    npy_bool *pf = NULL, *pf_base = NULL;
+    char *pf = NULL, *pf_base = NULL;
     char *pd = NULL, *pd_base = NULL;
     npy_intp oo_size = 0, foo_size = 0, pf_size = 0, pd_size = 0;
     NI_FilterIterator si, ti;

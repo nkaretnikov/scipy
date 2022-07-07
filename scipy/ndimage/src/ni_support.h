@@ -139,8 +139,8 @@ err:
 /* go to the next point in a single array */
 static inline bool NI_IteratorNext(
     NI_Iterator *it,
-    void **ptr,
-    void *ptr_base,
+    char **ptr,
+    char *ptr_base,
     npy_intp ptr_size)
 {
     if (NPY_UNLIKELY(!it || !ptr || ptr_size <= 0)) {  /* skip ptr_base */
@@ -179,8 +179,8 @@ err:
 /* go to the next point in two arrays of the same size */
 static inline bool NI_IteratorNext2(
     NI_Iterator *it1, NI_Iterator *it2,
-    void **ptr1, void *ptr1_base, npy_intp ptr1_size,
-    void **ptr2, void *ptr2_base, npy_intp ptr2_size)
+    char **ptr1, char *ptr1_base, npy_intp ptr1_size,
+    char **ptr2, char *ptr2_base, npy_intp ptr2_size)
 {
     if (NPY_UNLIKELY(
         !it1 || !it2 ||
@@ -226,9 +226,9 @@ err:
 /* go to the next point in three arrays of the same size */
 static inline bool NI_IteratorNext3(
     NI_Iterator *it1, NI_Iterator *it2, NI_Iterator *it3,
-    void **ptr1, void *ptr1_base, npy_intp ptr1_size,
-    void **ptr2, void *ptr2_base, npy_intp ptr2_size,
-    void **ptr3, void *ptr3_base, npy_intp ptr3_size)
+    char **ptr1, char *ptr1_base, npy_intp ptr1_size,
+    char **ptr2, char *ptr2_base, npy_intp ptr2_size,
+    char **ptr3, char *ptr3_base, npy_intp ptr3_size)
 {
     if (NPY_UNLIKELY(
         !it1 || !it2 || !it3 ||
@@ -280,8 +280,8 @@ err:
 static inline bool NI_IteratorGoto(
     NI_Iterator *it,
     npy_intp *dest,
-    void **ptr,
-    void *ptr_base,
+    char **ptr,
+    char *ptr_base,
     npy_intp ptr_size)
 {
     if (NPY_UNLIKELY(
@@ -389,8 +389,8 @@ int NI_InitFilterOffsets(PyArrayObject*, npy_bool*, npy_intp*,
 static inline bool NI_FilterNext(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
-    void ***ptrf, void **ptrf_base, npy_intp ptrf_size,
-    void **ptr1, void *ptr1_base, npy_intp ptr1_size)
+    npy_intp **ptrf, npy_intp *ptrf_base, npy_intp ptrf_size,
+    char **ptr1, char *ptr1_base, npy_intp ptr1_size)
 {
     if (NPY_UNLIKELY(
         !itf || !it1 ||
@@ -446,9 +446,9 @@ static inline bool NI_FilterNext2(
     NI_FilterIterator *itf,
     NI_Iterator *it1,
     NI_Iterator *it2,
-    void ***ptrf, void **ptrf_base, npy_intp ptrf_size,
-    void **ptr1, void *ptr1_base, npy_intp ptr1_size,
-    void **ptr2, void *ptr2_base, npy_intp ptr2_size)
+    npy_intp **ptrf, npy_intp *ptrf_base, npy_intp ptrf_size,
+    char **ptr1, char *ptr1_base, npy_intp ptr1_size,
+    char **ptr2, char *ptr2_base, npy_intp ptr2_size)
 {
     if (NPY_UNLIKELY(
         !itf || !it1 || !it2 ||
@@ -508,10 +508,10 @@ err:
 static inline bool NI_FilterNext3(
     NI_FilterIterator *itf,
     NI_Iterator *it1, NI_Iterator *it2, NI_Iterator *it3,
-    void ***ptrf, void **ptrf_base, npy_intp ptrf_size,
-    void **ptr1, void *ptr1_base, npy_intp ptr1_size,
-    void **ptr2, void *ptr2_base, npy_intp ptr2_size,
-    void **ptr3, void *ptr3_base, npy_intp ptr3_size)
+    npy_intp **ptrf, npy_intp *ptrf_base, npy_intp ptrf_size,
+    char **ptr1, char *ptr1_base, npy_intp ptr1_size,
+    char **ptr2, char *ptr2_base, npy_intp ptr2_size,
+    char **ptr3, char *ptr3_base, npy_intp ptr3_size)
 {
     if (NPY_UNLIKELY(
         !itf || !it1 || !it2 || !it3 ||
@@ -575,8 +575,8 @@ err:
 static inline bool NI_FilterGoto(
     NI_FilterIterator *itf,
     NI_Iterator *it,
-    void *fbase,
-    void **ptrf)
+    npy_intp *fbase,
+    npy_intp **ptrf)
 {
     if (NPY_UNLIKELY(!itf || !it || !ptrf)) {  /* skip fbase */
         goto err;
