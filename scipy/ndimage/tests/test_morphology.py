@@ -2376,7 +2376,7 @@ def test_binary_input_as_output(function, iterations, brute_force):
 # for offsets.  Then in NI_BinaryErosion, the offsets pointer is passed to
 # NI_FilterNext2 where it would be adjusted, but this is prevented by the size
 # check at the start of NI_FilterNext2, so the whole thing errors out.
-@pytest.mark.skip(reason="footprint_size equals 0")
+@pytest.mark.xfail(reason="footprint_size equals 0")
 def test_binary_hit_or_miss_input_as_output():
     rstate = numpy.random.RandomState(123)
     data = rstate.randint(low=0, high=2, size=100).astype(bool)
