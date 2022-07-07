@@ -54,14 +54,17 @@ case _TYPE:                                  \
                          _center_is_true, _true, _false, _changed)    \
 case _TYPE:                                                           \
 {                                                                     \
-    if (NPY_UNLIKELY(!_pi || _pi_size <= 0))                          \
+    if (NPY_UNLIKELY(                                                 \
+        !_pi || _pi_size <= 0 ||                                      \
+        _pi < _pi_base ||                                             \
+        _pi + sizeof(_type) >= _pi_base + _pi_size))                  \
     {                                                                 \
         NPY_END_THREADS;                                              \
         PyErr_SetString(PyExc_RuntimeError, "invalid pointer");       \
         goto exit;                                                    \
     }                                                                 \
-    npy_intp _ii, _oo;                                                \
     int _in = *(_type *)_pi ? 1 : 0;                                  \
+    npy_intp _ii, _oo;                                                \
     if (_mv) {                                                        \
         if (_center_is_true && _in == _false) {                       \
             _changed = 0;                                             \
@@ -72,7 +75,7 @@ case _TYPE:                                                           \
             for (_ii = 0; _ii < _filter_size; _ii++) {                \
                 if (NPY_UNLIKELY(                                     \
                     !_offsets || _offsets_size <= 0 ||                \
-                    _ii >= _offsets_size))                            \
+                    _ii * sizeof(npy_intp) >= _offsets_size))         \
                 {                                                     \
                     NPY_END_THREADS;                                  \
                     PyErr_SetString(                                  \
@@ -89,7 +92,8 @@ case _TYPE:                                                           \
                 else {                                                \
                     if (NPY_UNLIKELY(                                 \
                         _pi + _oo < _pi_base ||                       \
-                        _pi + _oo >= _pi_base + _pi_size))            \
+                        _pi + _oo + sizeof(_type) >=                  \
+                            _pi_base + _pi_size))                     \
                     {                                                 \
                         NPY_END_THREADS;                              \
                         PyErr_SetString(                              \
@@ -367,9 +371,6 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
     }
 }
 
-/* XXX: Here and everywhere else I need to multiply the index by the array
-   element size when checking the bounds.
-*/
 #define CASE_ERODE_POINT2(_TYPE, _type, _struct_size, _offsets,               \
                           _offsets_size, _coordinate_offsets,                 \
                           _coordinate_offsets_size, _pi, _pi_base, _pi_size,  \
@@ -383,7 +384,7 @@ case _TYPE:                                                                   \
         if (NPY_UNLIKELY(                                                     \
             !_offsets || _offsets_size <= 0 ||                                \
             _oo < 0 ||                                                        \
-            _oo + _hh >= _offsets_size))                                      \
+            (_oo + _hh) * sizeof(npy_intp) >= _offsets_size))                 \
         {                                                                     \
             NPY_END_THREADS;                                                  \
             PyErr_SetString(                                                  \
@@ -395,7 +396,7 @@ case _TYPE:                                                                   \
             if (NPY_UNLIKELY(                                                 \
                 !_pi || _pi_size <= 0 ||                                      \
                 _pi + _to < _pi_base ||                                       \
-                _pi + _to >= _pi_base + _pi_size))                            \
+                _pi + _to + sizeof(_type) >= _pi_base + _pi_size))            \
             {                                                                 \
                 NPY_END_THREADS;                                              \
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");       \
@@ -407,7 +408,8 @@ case _TYPE:                                                                   \
                         !_coordinate_offsets ||                               \
                         _coordinate_offsets_size <= 0 ||                      \
                         _oo < 0 ||                                            \
-                        (_oo + _hh) * _irank >= _coordinate_offsets_size))    \
+                        ((_oo + _hh) * _irank) * sizeof(npy_intp)             \
+                            >= _coordinate_offsets_size))                     \
                     {                                                         \
                         NPY_END_THREADS;                                      \
                         PyErr_SetString(                                      \
