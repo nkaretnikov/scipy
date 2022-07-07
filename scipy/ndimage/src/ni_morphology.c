@@ -57,7 +57,7 @@ case _TYPE:                                                           \
     if (NPY_UNLIKELY(                                                 \
         !_pi || _pi_size <= 0 ||                                      \
         _pi < _pi_base ||                                             \
-        _pi + sizeof(_type) >= _pi_base + _pi_size))                  \
+        _pi + sizeof(_type) > _pi_base + _pi_size))                   \
     {                                                                 \
         NPY_END_THREADS;                                              \
         PyErr_SetString(PyExc_RuntimeError, "invalid pointer");       \
@@ -75,7 +75,7 @@ case _TYPE:                                                           \
             for (_ii = 0; _ii < _filter_size; _ii++) {                \
                 if (NPY_UNLIKELY(                                     \
                     !_offsets || _offsets_size <= 0 ||                \
-                    _ii * sizeof(npy_intp) >= _offsets_size))         \
+                    _ii * sizeof(npy_intp) > _offsets_size))         \
                 {                                                     \
                     NPY_END_THREADS;                                  \
                     PyErr_SetString(                                  \
@@ -92,7 +92,7 @@ case _TYPE:                                                           \
                 else {                                                \
                     if (NPY_UNLIKELY(                                 \
                         _pi + _oo < _pi_base ||                       \
-                        _pi + _oo + sizeof(_type) >=                  \
+                        _pi + _oo + sizeof(_type) >                   \
                             _pi_base + _pi_size))                     \
                     {                                                 \
                         NPY_END_THREADS;                              \
@@ -384,7 +384,7 @@ case _TYPE:                                                                   \
         if (NPY_UNLIKELY(                                                     \
             !_offsets || _offsets_size <= 0 ||                                \
             _oo < 0 ||                                                        \
-            (_oo + _hh) * sizeof(npy_intp) >= _offsets_size))                 \
+            (_oo + _hh) * sizeof(npy_intp) > _offsets_size))                 \
         {                                                                     \
             NPY_END_THREADS;                                                  \
             PyErr_SetString(                                                  \
@@ -396,7 +396,7 @@ case _TYPE:                                                                   \
             if (NPY_UNLIKELY(                                                 \
                 !_pi || _pi_size <= 0 ||                                      \
                 _pi + _to < _pi_base ||                                       \
-                _pi + _to + sizeof(_type) >= _pi_base + _pi_size))            \
+                _pi + _to + sizeof(_type) > _pi_base + _pi_size))            \
             {                                                                 \
                 NPY_END_THREADS;                                              \
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");       \
@@ -409,7 +409,7 @@ case _TYPE:                                                                   \
                         _coordinate_offsets_size <= 0 ||                      \
                         _oo < 0 ||                                            \
                         ((_oo + _hh) * _irank) * sizeof(npy_intp)             \
-                            >= _coordinate_offsets_size))                     \
+                            > _coordinate_offsets_size))                     \
                     {                                                         \
                         NPY_END_THREADS;                                      \
                         PyErr_SetString(                                      \
