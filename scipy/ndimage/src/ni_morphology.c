@@ -48,10 +48,10 @@ case _TYPE:                                  \
     *(_type *)_po = (_type)_out;             \
     break
 
-#define CASE_NI_ERODE_POINT(_TYPE, _type, _pi, _pi_base, _pi_size,    \
-                            _out, _offsets, _offsets_size,            \
-                            _filter_size, _mv, _border_value, _bv,    \
-                            _center_is_true, _true, _false, _changed) \
+#define CASE_ERODE_POINT(_TYPE, _type, _pi, _pi_base, _pi_size,       \
+                         _out, _offsets, _offsets_size,               \
+                         _filter_size, _mv, _border_value, _bv,       \
+                         _center_is_true, _true, _false, _changed)    \
 case _TYPE:                                                           \
 {                                                                     \
     if (NPY_UNLIKELY(!_pi || _pi_size <= 0))                          \
@@ -227,71 +227,71 @@ int NI_BinaryErosion(PyArrayObject* input, PyArrayObject* strct,
             }
         }
         switch (PyArray_TYPE(input)) {
-            CASE_NI_ERODE_POINT(NPY_BOOL, npy_bool,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_UBYTE, npy_ubyte,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_USHORT, npy_ushort,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_UINT, npy_uint,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_ULONG, npy_ulong,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_ULONGLONG, npy_ulonglong,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_BYTE, npy_byte,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_SHORT, npy_short,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_INT, npy_int,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_LONG, npy_long,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_LONGLONG, npy_longlong,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_FLOAT, npy_float,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
-            CASE_NI_ERODE_POINT(NPY_DOUBLE, npy_double,
-                                pi, pi_base, pi_size, out, oo, oo_size,
-                                struct_size, msk_value, bdr_value,
-                                border_flag_value, center_is_true, _true,
-                                _false, pchange);
+            CASE_ERODE_POINT(NPY_BOOL, npy_bool,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_UBYTE, npy_ubyte,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_USHORT, npy_ushort,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_UINT, npy_uint,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_ULONG, npy_ulong,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_ULONGLONG, npy_ulonglong,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_BYTE, npy_byte,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_SHORT, npy_short,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_INT, npy_int,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_LONG, npy_long,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_LONGLONG, npy_longlong,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_FLOAT, npy_float,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
+            CASE_ERODE_POINT(NPY_DOUBLE, npy_double,
+                             pi, pi_base, pi_size, out, oo, oo_size,
+                             struct_size, msk_value, bdr_value,
+                             border_flag_value, center_is_true, _true,
+                             _false, pchange);
         default:
             NPY_END_THREADS;
             PyErr_SetString(PyExc_RuntimeError, "data type not supported");
