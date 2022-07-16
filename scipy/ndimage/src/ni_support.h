@@ -575,8 +575,8 @@ err:
 static inline bool NI_FilterGoto(
     NI_FilterIterator *itf,
     NI_Iterator *it,
-    npy_intp *fbase,
-    npy_intp **ptrf)
+    npy_intp fbase,
+    npy_intp *ptrf)
 {
     if (NPY_UNLIKELY(!itf || !it || !ptrf)) {  /* skip fbase */
         goto err;
