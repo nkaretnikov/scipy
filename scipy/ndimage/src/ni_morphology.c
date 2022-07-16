@@ -57,7 +57,7 @@ case _TYPE:                                                           \
     if (NPY_UNLIKELY(                                                 \
         !_pi || _pi_size <= 0 ||                                      \
         _pi < _pi_base ||                                             \
-        _pi + sizeof(_type) > _pi_base + _pi_size))                   \
+        _pi >= _pi_base + _pi_size))                                  \
     {                                                                 \
         NPY_END_THREADS;                                              \
         PyErr_SetString(PyExc_RuntimeError, "invalid pointer");       \
@@ -92,8 +92,7 @@ case _TYPE:                                                           \
                 else {                                                \
                     if (NPY_UNLIKELY(                                 \
                         _pi + _oo < _pi_base ||                       \
-                        _pi + _oo + sizeof(_type) >                   \
-                            _pi_base + _pi_size))                     \
+                        _pi + _oo >= _pi_base + _pi_size))            \
                     {                                                 \
                         NPY_END_THREADS;                              \
                         PyErr_SetString(                              \
@@ -396,7 +395,7 @@ case _TYPE:                                                                   \
             if (NPY_UNLIKELY(                                                 \
                 !_pi || _pi_size <= 0 ||                                      \
                 _pi + _to < _pi_base ||                                       \
-                _pi + _to + sizeof(_type) > _pi_base + _pi_size))            \
+                _pi + _to >= _pi_base + _pi_size))                            \
             {                                                                 \
                 NPY_END_THREADS;                                              \
                 PyErr_SetString(PyExc_RuntimeError, "invalid pointer");       \
