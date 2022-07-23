@@ -1231,6 +1231,28 @@ class TestNdimageMorphology:
         with assert_raises(RuntimeError, match="invalid pointer"):
             ndimage.binary_dilation(inds, struct, iterations=2)
 
+    def test_binary_erosion42(self):
+        # minimized version of test_binary_erosion41
+        inds = numpy.array([
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 1],
+            ],
+            dtype=bool)
+
+        struct = numpy.array([
+            [0, 0],
+            [0, 0],
+            [1, 1],
+            [0, 1],
+            [0, 0]
+            ],
+            dtype=bool)
+
+        with assert_raises(RuntimeError, match="invalid pointer"):
+            ndimage.binary_dilation(inds, struct, iterations=2)
+
     @pytest.mark.parametrize('dtype', types)
     def test_binary_dilation01(self, dtype):
         data = numpy.ones([], dtype)
