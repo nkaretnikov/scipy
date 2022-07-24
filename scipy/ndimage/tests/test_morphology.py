@@ -1678,6 +1678,7 @@ class TestNdimageMorphology:
                                       origin=(1, 1), border_value=1)
         assert_array_almost_equal(out, expected)
 
+    @pytest.mark.xfail(reason="goes out of bounds when accessing offsets")
     def test_binary_dilation36(self):
         # https://github.com/scikit-image/scikit-image/blob/main/skimage/morphology/footprints.py
         def disk(radius, dtype=numpy.uint8):
@@ -1689,9 +1690,10 @@ class TestNdimageMorphology:
         rstate = numpy.random.RandomState(123)
         inds = numpy.array(rstate.rand(45, 25) > 0.2)
         struct = disk(32, dtype=bool)
-        with assert_raises(RuntimeError, match="invalid pointer"):
-            ndimage.binary_dilation(inds, struct, iterations=2)
 
+        ndimage.binary_dilation(inds, struct, iterations=2)
+
+    @pytest.mark.xfail(reason="goes out of bounds when accessing offsets")
     def test_binary_dilation37(self):
         # minimized version of test_binary_dilation36
         inds = numpy.array([
@@ -1711,8 +1713,7 @@ class TestNdimageMorphology:
             ],
             dtype=bool)
 
-        with assert_raises(RuntimeError, match="invalid pointer"):
-            ndimage.binary_dilation(inds, struct, iterations=2)
+        ndimage.binary_dilation(inds, struct, iterations=2)
 
     def test_binary_propagation01(self):
         struct = [[0, 1, 0],
